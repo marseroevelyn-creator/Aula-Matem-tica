@@ -6,17 +6,17 @@
   <title>Panel de Control Docente</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-100 p-6 font-sans text-slate-800">
+<body class="bg-slate-100 p-4 md:p-6 font-sans text-slate-800">
 
   <div class="max-w-6xl mx-auto space-y-6">
     
-    <div class="bg-white p-6 rounded-2xl shadow-sm border flex justify-between items-center">
+    <div class="bg-white p-6 rounded-2xl shadow-sm border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
       <div>
-        <h1 class="text-2xl font-bold flex items-center gap-2">💻 Panel de Control Docente</h1>
-        <p class="text-xs text-slate-400 mt-0.5">Aula virtual de Matemática | Gestión de grupos y contenidos [cite: 238]</p>
+        <h1 class="text-2xl font-bold text-slate-800 flex items-center gap-2">💻 Panel de Control Docente</h1>
+        <p class="text-xs text-slate-400">Aula virtual de Matemática | Gestión completa de grupos, adecuaciones y respaldos</p>
       </div>
-      <div class="flex gap-2">
-        <button onclick="exportarRespaldo()" class="text-xs bg-slate-100 hover:bg-slate-200 font-bold px-3 py-2 rounded-xl border border-slate-300">📤 Exportar Todo (Copia JSON) [cite: 242]</button>
+      <div class="flex flex-wrap gap-2">
+        <button onclick="bajarRespaldoTotal()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-3 py-2 rounded-xl border">Exportar Todo (Copia JSON)</button>
         <button onclick="location.href='/'" class="text-xs bg-red-500 hover:bg-red-600 text-white font-bold px-4 py-2 rounded-xl">Salir</button>
       </div>
     </div>
@@ -24,90 +24,259 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
       
       <div class="bg-white p-5 rounded-2xl border shadow-sm space-y-3">
-        <h3 class="font-bold text-sm text-slate-700 uppercase">✨ Crear Nuevo Curso</h3>
-        <input type="text" id="curso-nombre" placeholder="Ej: 1° Año A" class="w-full p-2 border rounded-xl text-sm">
-        <input type="text" id="curso-wa" placeholder="Link de WhatsApp (Opcional)" class="w-full p-2 border rounded-xl text-sm">
-        <button onclick="crearCurso()" class="w-full bg-blue-600 text-white font-bold py-2 text-xs rounded-xl">Guardar Curso</button>
+        <h3 class="font-bold text-xs text-slate-500 uppercase tracking-wider">✨ Registrar Grupo / Curso</h3>
+        <input type="text" id="add-curso-nombre" placeholder="Ej: 1° Año A" class="w-full p-2.5 bg-slate-50 border rounded-xl text-xs outline-none">
+        <input type="text" id="add-curso-wa" placeholder="Link Grupo de WhatsApp" class="w-full p-2.5 bg-slate-50 border rounded-xl text-xs outline-none">
+        <button onclick="crearNuevoCurso()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 text-xs rounded-xl shadow-sm">Guardar Curso</button>
       </div>
 
-      <div class="bg-white p-5 rounded-2xl border shadow-sm space-y-2 md:col-span-2">
-        <h3 class="font-bold text-sm text-slate-700 uppercase">📁 Agregar al Banco de Recursos</h3>
-        <div class="grid grid-cols-2 gap-2">
-          <input type="text" id="t-tema" placeholder="Tema (Ej: Unidad 1: Fracciones)" class="p-2 border rounded-xl text-sm">
-          <input type="text" id="t-actividad" placeholder="Nombre de Actividad" class="p-2 border rounded-xl text-sm">
-          <select id="t-tipo" class="p-2 border rounded-xl text-sm">
-            <option value="archivo">Requiere subir Archivo</option>
+      <div class="bg-white p-5 rounded-2xl border shadow-sm space-y-3 md:col-span-2">
+        <h3 class="font-bold text-xs text-slate-500 uppercase tracking-wider">📁 Banco Global de Recursos</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <input type="text" id="task-tema" placeholder="Tema (Ej: Unidad 1: Fracciones)" class="p-2.5 bg-slate-50 border rounded-xl text-xs">
+          <input type="text" id="task-actividad" placeholder="Nombre de la Actividad" class="p-2.5 bg-slate-50 border rounded-xl text-xs">
+          <select id="task-tipo" class="p-2.5 bg-slate-50 border rounded-xl text-xs font-semibold text-slate-600">
+            <option value="archivo">Requiere entrega de Archivo</option>
             <option value="video">Video Informativo</option>
             <option value="test">Test de Preguntas</option>
           </select>
-          <input type="text" id="t-url" placeholder="URL (YouTube, Drive, Geogebra)" class="p-2 border rounded-xl text-sm">
-          <input type="date" id="t-fecha" class="p-2 border rounded-xl text-sm">
-          <input type="number" id="t-pre" placeholder="ID Prerrequisito (Opcional)" class="p-2 border rounded-xl text-sm">
+          <input type="text" id="task-url" placeholder="URL Externa (Drive, YouTube, GeoGebra)" class="p-2.5 bg-slate-50 border rounded-xl text-xs">
+          <input type="date" id="task-fecha" class="p-2.5 bg-slate-50 border rounded-xl text-xs font-medium text-slate-500">
+          <input type="number" id="task-pre" placeholder="ID Tarea Prerrequisito (Opcional)" class="p-2.5 bg-slate-50 border rounded-xl text-xs">
         </div>
-        <button onclick="crearTarea()" class="w-full bg-green-600 text-white font-bold py-2 text-xs rounded-xl mt-2">+ Crear Tarea en Banco</button>
+        <button onclick="guardarTareaBanco()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 text-xs rounded-xl shadow-sm">+ Crear Tarea en Banco Global</button>
       </div>
 
     </div>
 
-    <div id="panel-dinamico-cursos" class="space-y-6"></div>
+    <div id="wrapper-cursos" class="space-y-6"></div>
 
   </div>
 
-  <script>
-    async function cargarDashboardDocente() {
-      const res = await fetch('/api/docente/dashboard');
-      const data = await res.json();
-      const box = document.getElementById('panel-dinamico-cursos');
-      box.innerHTML = '';
+  <div id="modal-adecuacion" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white p-6 rounded-2xl max-w-lg w-full shadow-xl max-h-[80vh] overflow-y-auto">
+      <h3 class="font-bold text-lg text-slate-800">🎯 Adecuación Curricular Individual</h3>
+      <p id="adecuacion-meta" class="text-xs text-slate-400 mb-4"></p>
+      <div id="lista-adecuaciones-tareas" class="space-y-2 mb-6"></div>
+      <div class="flex justify-end gap-2">
+        <button onclick="cerrarAdecuacionModal()" class="bg-slate-200 text-slate-700 font-bold px-4 py-2 text-xs rounded-xl">Cerrar Ventana</button>
+      </div>
+    </div>
+  </div>
 
-      data.cursos.forEach(c => {
-        box.innerHTML += `
+  <script>
+    let cacheDocente = {};
+
+    async function inicializarPanel() {
+      const res = await fetch('/api/docente/dashboard');
+      if(!res.ok) return;
+      cacheDocente = await res.json();
+      
+      const wrapper = document.getElementById('wrapper-cursos');
+      wrapper.innerHTML = '';
+
+      cacheDocente.cursos.forEach(cur => {
+        const alumnosCurso = cacheDocente.alumnos.filter(a => a.curso_id === cur.id);
+        
+        wrapper.innerHTML += `
           <div class="bg-white p-6 rounded-2xl border shadow-sm space-y-4">
-            <div class="border-b pb-2 flex justify-between items-center">
-              <h2 class="text-xl font-bold text-blue-600">📌 Curso: ${c.nombre}</h2>
-              <span class="text-xs text-slate-400">WhatsApp: ${c.whatsapp_link || 'No asignado'}</span>
+            
+            <div class="flex justify-between items-center border-b pb-3">
+              <div>
+                <h2 class="text-xl font-bold text-blue-600 flex items-center gap-2">📌 Curso: ${cur.nombre}</h2>
+                <p class="text-[11px] text-slate-400 font-medium">Enlace WhatsApp: ${cur.whatsapp_link || 'No registrado'}</p>
+              </div>
+              <div class="relative inline-block text-left">
+                <select onchange="ejecutarMenuCurso(this, ${cur.id}, '${cur.nombre}')" class="bg-slate-50 border rounded-xl text-xs font-bold p-2 cursor-pointer outline-none">
+                  <option value="">⚙️ Opciones Curso</option>
+                  <option value="nombre">Editar Nombre</option>
+                  <option value="wa">Configurar WhatsApp</option>
+                  <option value="fechas">Gestionar Fechas Clave</option>
+                  <option value="eliminar">❌ Eliminar Curso</option>
+                </select>
+              </div>
             </div>
-            <p class="text-xs text-slate-500 bg-slate-50 p-2 rounded-lg">📅 Fechas Importantes: ${c.fechas_importantes}</p>
-            <div class="text-xs text-slate-400 italic">Registros listos. Los alumnos de este grupo ingresan con su nombre y clave genérica por defecto.</div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+              
+              <div class="md:col-span-2 space-y-3">
+                <div class="flex justify-between items-center">
+                  <h4 class="font-bold text-slate-600 uppercase">Alumnos Inscritos:</h4>
+                  <div class="flex gap-1">
+                    <input type="text" id="new-al-name-${cur.id}" placeholder="Nombre Completo" class="border p-1 rounded-lg text-xs outline-none">
+                    <button onclick="ingresarAlumno(${cur.id})" class="bg-blue-600 text-white font-bold px-2 py-1 rounded-lg">Añadir</button>
+                  </div>
+                </div>
+                
+                <div class="bg-slate-50 rounded-xl p-2 max-h-48 overflow-y-auto border space-y-2">
+                  ${alumnosCurso.map(al => `
+                    <div class="bg-white p-2 rounded-lg border flex justify-between items-center">
+                      <span class="font-bold text-slate-700">${al.nombre_completo}</span>
+                      <div class="flex gap-1">
+                        <button onclick="abrirAdecuacion(${al.id}, '${al.nombre_completo}')" class="bg-cyan-500 text-white px-2 py-1 rounded font-semibold text-[10px]">Gestionar</button>
+                        <button onclick="reestablecerClave(${al.id})" class="bg-slate-100 text-slate-600 px-2 py-1 rounded border text-[10px] font-semibold">🔄 Reset</button>
+                        <button onclick="removerAlumno(${al.id})" class="bg-red-100 text-red-600 px-1.5 py-1 rounded text-[10px]">❌</button>
+                      </div>
+                    </div>
+                  `).join('')}
+                  ${alumnosCurso.length === 0 ? '<p class="text-slate-400 italic text-center p-2">Sin estudiantes registrados.</p>':''}
+                </div>
+              </div>
+
+              <div class="space-y-2">
+                <h4 class="font-bold text-slate-600 uppercase">Asignar del Banco Global:</h4>
+                <div class="space-y-1.5 max-h-48 overflow-y-auto border rounded-xl p-2 bg-slate-50">
+                  ${cacheDocente.bancoTareas.map(t => `
+                    <div class="bg-white p-2 rounded-lg border flex justify-between items-center text-[11px]">
+                      <span class="font-medium truncate max-w-[120px]">${t.actividad}</span>
+                      <button onclick="vincularTareaCurso(${cur.id}, ${t.id})" class="bg-green-600 text-white font-bold px-2 py-0.5 rounded text-[10px]">+ Asignar</button>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+
+            </div>
+
           </div>
         `;
       });
     }
 
-    async function crearCurso() {
+    async function ejecutarMenuCurso(sel, id, nombreActual) {
+      const accion = sel.value;
+      if(!accion) return;
+      sel.value = "";
+
+      if(accion === 'eliminar') {
+        if(confirm(`¿Estás segura de eliminar el curso ${nombreActual}?`)) {
+          await fetch(`/api/docente/cursos/${id}`, { method: 'DELETE' });
+          inicializarPanel();
+        }
+      } else if(accion === 'nombre') {
+        const n = prompt("Nuevo nombre del curso:", nombreActual);
+        if(n) {
+          await fetch(`/api/docente/cursos/${id}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ nombre: n })
+          });
+          inicializarPanel();
+        }
+      } else if(accion === 'fechas') {
+        const f = prompt("Escribe las fechas importantes para este curso:");
+        if(f !== null) {
+          await fetch(`/api/docente/cursos/${id}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ nombre: nombreActual, fechas_importantes: f })
+          });
+          inicializarPanel();
+        }
+      }
+    }
+
+    async function crearNuevoCurso() {
+      const nombre = document.getElementById('add-curso-nombre').value;
+      const wa = document.getElementById('add-curso-wa').value;
+      if(!nombre) return;
       await fetch('/api/docente/cursos', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-          nombre: document.getElementById('curso-nombre').value,
-          whatsapp_link: document.getElementById('curso-wa').value
-        })
+        body: JSON.stringify({ nombre, whatsapp_link: wa })
       });
-      cargarDashboardDocente();
+      inicializarPanel();
     }
 
-    async function crearTarea() {
+    async function guardarTareaBanco() {
       await fetch('/api/docente/tareas', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
-          tema: document.getElementById('t-tema').value,
-          actividad: document.getElementById('t-actividad').value,
-          tipo: document.getElementById('t-tipo').value,
-          recurso_url: document.getElementById('t-url').value,
-          fecha_entrega: document.getElementById('t-fecha').value,
-          prerrequisito_id: document.getElementById('t-pre').value
+          tema: document.getElementById('task-tema').value,
+          actividad: document.getElementById('task-actividad').value,
+          tipo: document.getElementById('task-tipo').value,
+          recurso_url: document.getElementById('task-url').value,
+          fecha_entrega: document.getElementById('task-fecha').value || null,
+          prerrequisito_id: document.getElementById('task-pre').value || null
         })
       });
-      alert("Añadida al banco global.");
-      cargarDashboardDocente();
+      alert('Actividad incorporada al Banco Global.');
+      inicializarPanel();
     }
 
-    function exportarRespaldo() {
+    async function ingresarAlumno(cId) {
+      const input = document.getElementById(`new-al-name-${cId}`);
+      if(!input.value) return;
+      await fetch('/api/docente/alumnos', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ nombre_completo: input.value, curso_id: cId })
+      });
+      input.value = '';
+      inicializarPanel();
+    }
+
+    async function reestablecerClave(alId) {
+      await fetch('/api/docente/alumnos/reiniciar-clave', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ alumno_id: alId })
+      });
+      alert('Contraseña restablecida a "usuario" con éxito.');
+    }
+
+    async function removerAlumno(id) {
+      if(confirm('¿Eliminar de forma permanente este estudiante?')) {
+        await fetch(`/api/docente/alumnos/${id}`, { method: 'DELETE' });
+        inicializarPanel();
+      }
+    }
+
+    async function vincularTareaCurso(cId, tId) {
+      await fetch('/api/docente/tareas/asignar-curso', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ curso_id: cId, tarea_id: tId })
+      });
+      alert('Actividad asignada de forma masiva al curso.');
+    }
+
+    function abrirAdecuacion(alumnoId, nombre) {
+      document.getElementById('adecuacion-meta').innerText = `Configuración de exclusión para: ${nombre}`;
+      const box = document.getElementById('lista-adecuaciones-tareas');
+      box.innerHTML = cacheDocente.bancoTareas.map(t => `
+        <div class="flex justify-between items-center bg-slate-50 p-2 rounded-lg text-xs">
+          <div>
+            <span class="font-bold text-slate-500">[${t.tema}]</span>
+            <p class="text-slate-800 font-semibold">${t.actividad}</p>
+          </div>
+          <label class="inline-flex items-center cursor-pointer">
+            <input type="checkbox" onchange="conmutarAdecuacion(${alumnoId}, ${t.id}, this.checked)" class="rounded text-blue-600 focus:ring-blue-500 w-4 h-4">
+            <span class="ml-2 font-bold text-red-600 text-[11px]">Omitir Tarea</span>
+          </label>
+        </div>
+      `).join('');
+      document.getElementById('modal-adecuacion').classList.remove('hidden');
+    }
+
+    async function conmutarAdecuacion(alId, tId, checked) {
+      await fetch('/api/docente/adecuacion', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ alumno_id: alId, tarea_id: tId, excluido: checked })
+      });
+    }
+
+    function cerrarAdecuacionModal() {
+      document.getElementById('modal-adecuacion').classList.add('hidden');
+      inicializarPanel();
+    }
+
+    function bajarRespaldoTotal() {
       window.open('/api/docente/respaldo/exportar', '_blank');
     }
 
-    window.onload = cargarDashboardDocente;
+    window.onload = inicializarPanel;
   </script>
 </body>
 </html>
