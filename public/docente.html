@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel de Control Docente</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 p-6 font-sans text-slate-800">
+
+  <div class="max-w-6xl mx-auto space-y-6">
+    
+    <div class="bg-white p-6 rounded-2xl shadow-sm border flex justify-between items-center">
+      <div>
+        <h1 class="text-2xl font-bold flex items-center gap-2">💻 Panel de Control Docente</h1>
+        <p class="text-xs text-slate-400 mt-0.5">Aula virtual de Matemática | Gestión de grupos y contenidos [cite: 238]</p>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="exportarRespaldo()" class="text-xs bg-slate-100 hover:bg-slate-200 font-bold px-3 py-2 rounded-xl border border-slate-300">📤 Exportar Todo (Copia JSON) [cite: 242]</button>
+        <button onclick="location.href='/'" class="text-xs bg-red-500 hover:bg-red-600 text-white font-bold px-4 py-2 rounded-xl">Salir</button>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      
+      <div class="bg-white p-5 rounded-2xl border shadow-sm space-y-3">
+        <h3 class="font-bold text-sm text-slate-700 uppercase">✨ Crear Nuevo Curso</h3>
+        <input type="text" id="curso-nombre" placeholder="Ej: 1° Año A" class="w-full p-2 border rounded-xl text-sm">
+        <input type="text" id="curso-wa" placeholder="Link de WhatsApp (Opcional)" class="w-full p-2 border rounded-xl text-sm">
+        <button onclick="crearCurso()" class="w-full bg-blue-600 text-white font-bold py-2 text-xs rounded-xl">Guardar Curso</button>
+      </div>
+
+      <div class="bg-white p-5 rounded-2xl border shadow-sm space-y-2 md:col-span-2">
+        <h3 class="font-bold text-sm text-slate-700 uppercase">📁 Agregar al Banco de Recursos</h3>
+        <div class="grid grid-cols-2 gap-2">
+          <input type="text" id="t-tema" placeholder="Tema (Ej: Unidad 1: Fracciones)" class="p-2 border rounded-xl text-sm">
+          <input type="text" id="t-actividad" placeholder="Nombre de Actividad" class="p-2 border rounded-xl text-sm">
+          <select id="t-tipo" class="p-2 border rounded-xl text-sm">
+            <option value="archivo">Requiere subir Archivo</option>
+            <option value="video">Video Informativo</option>
+            <option value="test">Test de Preguntas</option>
+          </select>
+          <input type="text" id="t-url" placeholder="URL (YouTube, Drive, Geogebra)" class="p-2 border rounded-xl text-sm">
+          <input type="date" id="t-fecha" class="p-2 border rounded-xl text-sm">
+          <input type="number" id="t-pre" placeholder="ID Prerrequisito (Opcional)" class="p-2 border rounded-xl text-sm">
+        </div>
+        <button onclick="crearTarea()" class="w-full bg-green-600 text-white font-bold py-2 text-xs rounded-xl mt-2">+ Crear Tarea en Banco</button>
+      </div>
+
+    </div>
+
+    <div id="panel-dinamico-cursos" class="space-y-6"></div>
+
+  </div>
+
+  <script>
+    async function cargarDashboardDocente() {
+      const res = await fetch('/api/docente/dashboard');
+      const data = await res.json();
+      const box = document.getElementById('panel-dinamico-cursos');
+      box.innerHTML = '';
+
+      data.cursos.forEach(c => {
+        box.innerHTML += `
+          <div class="bg-white p-6 rounded-2xl border shadow-sm space-y-4">
+            <div class="border-b pb-2 flex justify-between items-center">
+              <h2 class="text-xl font-bold text-blue-600">📌 Curso: ${c.nombre}</h2>
+              <span class="text-xs text-slate-400">WhatsApp: ${c.whatsapp_link || 'No asignado'}</span>
+            </div>
+            <p class="text-xs text-slate-500 bg-slate-50 p-2 rounded-lg">📅 Fechas Importantes: ${c.fechas_importantes}</p>
+            <div class="text-xs text-slate-400 italic">Registros listos. Los alumnos de este grupo ingresan con su nombre y clave genérica por defecto.</div>
+          </div>
+        `;
+      });
+    }
+
+    async function crearCurso() {
+      await fetch('/api/docente/cursos', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          nombre: document.getElementById('curso-nombre').value,
+          whatsapp_link: document.getElementById('curso-wa').value
+        })
+      });
+      cargarDashboardDocente();
+    }
+
+    async function crearTarea() {
+      await fetch('/api/docente/tareas', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          tema: document.getElementById('t-tema').value,
+          actividad: document.getElementById('t-actividad').value,
+          tipo: document.getElementById('t-tipo').value,
+          recurso_url: document.getElementById('t-url').value,
+          fecha_entrega: document.getElementById('t-fecha').value,
+          prerrequisito_id: document.getElementById('t-pre').value
+        })
+      });
+      alert("Añadida al banco global.");
+      cargarDashboardDocente();
+    }
+
+    function exportarRespaldo() {
+      window.open('/api/docente/respaldo/exportar', '_blank');
+    }
+
+    window.onload = cargarDashboardDocente;
+  </script>
+</body>
+</html>
