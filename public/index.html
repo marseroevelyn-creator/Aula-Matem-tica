@@ -3,78 +3,87 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Aula Virtual - Inicio</title>
+  <title>Aula Virtual - Ingreso</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen font-sans">
+<body class="bg-slate-100 flex items-center justify-center min-h-screen p-4">
 
-  <div id="login-alumno-card" class="bg-white p-8 rounded-2xl shadow-xl max-w-sm w-full text-center border border-gray-200">
-    <div class="text-blue-600 text-5xl mb-2 flex justify-center">📊</div>
-    <h1 class="text-3xl font-bold text-gray-800 mb-6">Aula Virtual</h1>
+  <div id="card-alumno" class="bg-white p-8 rounded-3xl shadow-xl max-w-sm w-full text-center border border-gray-100">
+    <div class="text-blue-500 text-5xl mb-3 flex justify-center">📘</div>
+    <h1 class="text-3xl font-extrabold text-slate-800 mb-6">Aula Virtual</h1>
     
-    <form id="form-alumno" class="text-left">
-      <label class="block text-sm font-bold text-gray-700 mb-1">Tu Nombre Completo:</label>
-      <input type="text" id="alumno-nombre" placeholder="Escribí tu nombre..." list="nombres-sugeridos" class="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-      <datalist id="nombres-sugeridos"></datalist>
-
-      <label class="block text-sm font-bold text-gray-700 mb-1">Tu Contraseña:</label>
-      <div class="relative mb-6">
-        <input type="password" id="alumno-password" placeholder="Contraseña" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-        <button type="button" onclick="togglePassword('alumno-password')" class="absolute right-3 top-3 text-gray-500">👁️</button>
+    <form id="form-alumno" class="text-left space-y-4">
+      <div>
+        <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">Tu Nombre Completo:</label>
+        <input type="text" id="al-nombre" placeholder="Escribí tu nombre..." list="lista-predictiva" class="w-full p-3 bg-slate-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-slate-700" required>
+        <datalist id="lista-predictiva"></datalist>
       </div>
 
-      <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl transition duration-200">Ingresar al Aula</button>
+      <div>
+        <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">Tu Contraseña:</label>
+        <div class="relative">
+          <input type="password" id="al-pass" placeholder="Contraseña" class="w-full p-3 bg-slate-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-slate-700" required>
+          <button type="button" onclick="verClave('al-pass')" class="absolute right-3 top-3.5 text-gray-400 hover:text-slate-600">👁️</button>
+        </div>
+      </div>
+
+      <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl transition shadow-lg shadow-blue-200">Ingresar al Aula</button>
     </form>
 
-    <button onclick="mostrarPanelDocente()" class="mt-6 text-sm text-gray-500 hover:text-gray-700 inline-flex items-center gap-1 justify-center w-full">
+    <button onclick="cambiarVista('docente')" class="mt-6 text-xs text-slate-400 hover:text-slate-600 flex items-center gap-1 justify-center w-full">
       💻 Acceso Panel Docente
     </button>
   </div>
 
-  <div id="login-docente-card" class="hidden bg-white p-8 rounded-2xl shadow-xl max-w-sm w-full text-center border border-gray-200">
-    <h2 class="text-2xl font-bold text-gray-800 mb-2">Panel Docente</h2>
-    <form id="form-docente" class="text-left">
-      <label class="block text-sm font-bold text-gray-700 mb-1">Contraseña Docente</label>
-      <input type="password" id="docente-password" class="w-full p-3 border border-gray-300 rounded-lg mb-4" required>
-      <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl">Ingresar</button>
+  <div id="card-docente" class="hidden bg-white p-8 rounded-3xl shadow-xl max-w-sm w-full text-center border border-gray-100">
+    <h2 class="text-2xl font-bold text-slate-800 mb-6">Panel Docente</h2>
+    <form id="form-docente" class="text-left space-y-4">
+      <div>
+        <label class="block text-xs font-bold text-slate-600 mb-1">Contraseña Docente</label>
+        <input type="password" id="doc-pass" class="w-full p-3 bg-slate-50 border border-gray-200 rounded-xl" required>
+      </div>
+      <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl">Ingresar</button>
     </form>
-    <button onclick="mostrarAlumnos()" class="mt-4 text-xs text-blue-500 underline">Volver a Alumnos</button>
+    <button onclick="cambiarVista('alumno')" class="mt-4 text-xs text-blue-500 underline">Volver a Alumnos</button>
   </div>
 
-  <div id="modal-primer-ingreso" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-    <div class="bg-white p-6 rounded-xl max-w-xs w-full text-center">
-      <h3 class="text-xl font-bold mb-2">Primer Ingreso</h3>
-      <p class="text-sm text-gray-600 mb-4">Por seguridad debés cambiar tu contraseña genérica.</p>
-      <input type="password" id="nueva-password" placeholder="Nueva contraseña (mínimo 4 dígitos)" class="w-full p-2 border border-gray-300 rounded mb-4 text-center">
-      <button onclick="procesarCambioPassword()" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 rounded">Guardar y Entrar</button>
+  <div id="modal-primer-ingreso" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white p-6 rounded-2xl max-w-xs w-full text-center shadow-2xl">
+      <h3 class="text-xl font-bold text-slate-800 mb-2">Primer Ingreso</h3>
+      <p class="text-xs text-slate-500 mb-4">Por seguridad debés cambiar tu contraseña genérica.</p>
+      <input type="password" id="nueva-clave" placeholder="Nueva contraseña (mínimo 4 dígitos)" class="w-full p-2.5 border text-center rounded-xl mb-4">
+      <button onclick="guardarNuevaClave()" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-2.5 rounded-xl transition">Guardar y Entrar</button>
     </div>
   </div>
 
   <script>
-    function togglePassword(id) {
+    function verClave(id) {
       const input = document.getElementById(id);
       input.type = input.type === 'password' ? 'text' : 'password';
     }
-    function mostrarPanelDocente() {
-      document.getElementById('login-alumno-card').classList.add('hidden');
-      document.getElementById('login-docente-card').classList.remove('hidden');
-    }
-    function mostrarAlumnos() {
-      document.getElementById('login-docente-card').classList.add('hidden');
-      document.getElementById('login-alumno-card').classList.remove('hidden');
+
+    function cambiarVista(tipo) {
+      document.getElementById('card-alumno').classList.toggle('hidden', tipo === 'docente');
+      document.getElementById('card-docente').classList.toggle('hidden', tipo === 'alumno');
     }
 
-    // Lógica básica de envío a las APIs del servidor
+    // Cargar nombres sugeridos de manera automática para el buscador predictivo
+    async function cargarSugerencias() {
+      const res = await fetch('/api/alumnos/buscar');
+      const alumnos = await res.json();
+      const datalist = document.getElementById('lista-predictiva');
+      datalist.innerHTML = alumnos.map(a => `<option value="${a.nombre_completo}">(${a.curso_nombre})</option>`).join('');
+    }
+
     document.getElementById('form-docente').addEventListener('submit', async (e) => {
       e.preventDefault();
       const res = await fetch('/api/login/docente', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ password: document.getElementById('docente-password').value })
+        body: JSON.stringify({ password: document.getElementById('doc-pass').value })
       });
-      const data = await res.json();
-      if(data.success) window.location.href = data.redirect;
-      else alert('Clave incorrecta');
+      if(res.ok) window.location.href = '/docente.html';
+      else alert('Contraseña docente incorrecta');
     });
 
     document.getElementById('form-alumno').addEventListener('submit', async (e) => {
@@ -83,29 +92,28 @@
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
-          nombre_completo: document.getElementById('alumno-nombre').value,
-          password: document.getElementById('alumno-password').value
+          nombre_completo: document.getElementById('al-nombre').value,
+          password: document.getElementById('al-pass').value
         })
       });
-      if (!res.ok) return alert('Credenciales incorrectas');
+      if(!res.ok) return alert('Verificá los datos ingresados');
       const data = await res.json();
-      if (data.primerIngreso) {
-        document.getElementById('modal-primer-ingreso').classList.remove('hidden');
-      } else {
-        window.location.href = '/alumno.html';
-      }
+      if(data.primerIngreso) document.getElementById('modal-primer-ingreso').classList.remove('hidden');
+      else window.location.href = '/alumno.html';
     });
 
-    async function procesarCambioPassword() {
-      const nueva = document.getElementById('nueva-password').value;
-      const res = await fetch('/api/alumno/cambiar-password', {
+    async function guardarNuevaClave() {
+      const clave = document.getElementById('nueva-clave').value;
+      const res = await fetch('/api/alumno/cambiar-clave', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ nuevaPassword: nueva })
+        body: JSON.stringify({ nuevaClave: clave })
       });
       if(res.ok) window.location.href = '/alumno.html';
-      else alert('Error: Asegúrate que tenga 4 o más caracteres');
+      else alert('La clave debe contener 4 o más caracteres');
     }
+
+    window.onload = cargarSugerencias;
   </script>
 </body>
 </html>
