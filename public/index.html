@@ -3,92 +3,83 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Aula Virtual - Ingreso</title>
+  <title>Aula Virtual - Matemática</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-100 flex items-center justify-center min-h-screen p-4">
 
-  <div id="card-alumno" class="bg-white p-8 rounded-3xl shadow-xl max-w-sm w-full text-center border border-gray-100">
-    <div class="text-blue-500 text-5xl mb-3 flex justify-center">📘</div>
+  <div id="vista-alumno" class="bg-white p-8 rounded-3xl shadow-xl max-w-sm w-full border border-gray-100 text-center">
+    <div class="inline-block bg-blue-500 text-white p-3 rounded-2xl mb-3 text-3xl">🧮</div>
     <h1 class="text-3xl font-extrabold text-slate-800 mb-6">Aula Virtual</h1>
     
     <form id="form-alumno" class="text-left space-y-4">
       <div>
-        <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">Tu Nombre Completo:</label>
-        <input type="text" id="al-nombre" placeholder="Escribí tu nombre..." list="lista-predictiva" class="w-full p-3 bg-slate-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-slate-700" required>
-        <datalist id="lista-predictiva"></datalist>
+        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Tu Nombre Completo:</label>
+        <input type="text" id="al-nombre" placeholder="Escribí tu nombre..." list="sugerencias-alumnos" class="w-full p-3 bg-slate-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-slate-700 font-medium" required>
+        <datalist id="sugerencias-alumnos"></datalist>
       </div>
 
       <div>
-        <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">Tu Contraseña:</label>
+        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Tu Contraseña:</label>
         <div class="relative">
-          <input type="password" id="al-pass" placeholder="Contraseña" class="w-full p-3 bg-slate-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-slate-700" required>
-          <button type="button" onclick="verClave('al-pass')" class="absolute right-3 top-3.5 text-gray-400 hover:text-slate-600">👁️</button>
+          <input type="password" id="al-pass" placeholder="Contraseña" class="w-full p-3 bg-slate-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-slate-700 font-medium" required>
+          <button type="button" onclick="conmutarVisibilidad('al-pass')" class="absolute right-3 top-3.5 text-gray-400 hover:text-slate-600">👁️</button>
         </div>
       </div>
 
-      <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl transition shadow-lg shadow-blue-200">Ingresar al Aula</button>
+      <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl transition shadow-md shadow-blue-200">Ingresar al Aula</button>
     </form>
 
-    <button onclick="cambiarVista('docente')" class="mt-6 text-xs text-slate-400 hover:text-slate-600 flex items-center gap-1 justify-center w-full">
-      💻 Acceso Panel Docente
-    </button>
+    <button onclick="alternarFormularios('docente')" class="mt-6 text-xs text-slate-400 hover:text-slate-600 block w-full text-center">💻 Acceso Panel Docente</button>
   </div>
 
-  <div id="card-docente" class="hidden bg-white p-8 rounded-3xl shadow-xl max-w-sm w-full text-center border border-gray-100">
-    <h2 class="text-2xl font-bold text-slate-800 mb-6">Panel Docente</h2>
+  <div id="vista-docente" class="hidden bg-white p-8 rounded-3xl shadow-xl max-w-sm w-full border border-gray-100 text-center">
+    <h2 class="text-2xl font-bold text-slate-800 mb-2">Panel Docente</h2>
+    <p class="text-xs text-slate-400 mb-6">Área de gestión y control de contenidos</p>
+    
     <form id="form-docente" class="text-left space-y-4">
       <div>
-        <label class="block text-xs font-bold text-slate-600 mb-1">Contraseña Docente</label>
-        <input type="password" id="doc-pass" class="w-full p-3 bg-slate-50 border border-gray-200 rounded-xl" required>
+        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Contraseña de Acceso:</label>
+        <div class="relative">
+          <input type="password" id="doc-pass" placeholder="Contraseña Docente" class="w-full p-3 bg-slate-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" required>
+          <button type="button" onclick="conmutarVisibilidad('doc-pass')" class="absolute right-3 top-3.5 text-gray-400 hover:text-slate-600">👁️</button>
+        </div>
       </div>
-      <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl">Ingresar</button>
+      <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-md">Ingresar</button>
     </form>
-    <button onclick="cambiarVista('alumno')" class="mt-4 text-xs text-blue-500 underline">Volver a Alumnos</button>
+    <button onclick="alternarFormularios('alumno')" class="mt-4 text-xs text-blue-500 underline block w-full text-center">Volver a Alumnos</button>
   </div>
 
   <div id="modal-primer-ingreso" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white p-6 rounded-2xl max-w-xs w-full text-center shadow-2xl">
-      <h3 class="text-xl font-bold text-slate-800 mb-2">Primer Ingreso</h3>
-      <p class="text-xs text-slate-500 mb-4">Por seguridad debés cambiar tu contraseña genérica.</p>
-      <input type="password" id="nueva-clave" placeholder="Nueva contraseña (mínimo 4 dígitos)" class="w-full p-2.5 border text-center rounded-xl mb-4">
-      <button onclick="guardarNuevaClave()" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-2.5 rounded-xl transition">Guardar y Entrar</button>
+    <div class="bg-white p-6 rounded-2xl max-w-xs w-full text-center shadow-2xl border">
+      <h3 class="text-xl font-bold text-slate-800 mb-1">Primer Ingreso</h3>
+      <p class="text-xs text-slate-400 mb-4">Por seguridad debés cambiar tu contraseña genérica.</p>
+      <input type="password" id="nueva-clave" placeholder="Nueva contraseña (mínimo 4 dígitos)" class="w-full p-2.5 border rounded-xl text-center mb-4 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+      <button onclick="ejecutarCambioClave()" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-2.5 rounded-xl transition">Guardar y Entrar</button>
     </div>
   </div>
 
   <script>
-    function verClave(id) {
-      const input = document.getElementById(id);
-      input.type = input.type === 'password' ? 'text' : 'password';
+    function conmutarVisibilidad(idElemento) {
+      const campo = document.getElementById(idElemento);
+      campo.type = campo.type === 'password' ? 'text' : 'password';
     }
 
-    function cambiarVista(tipo) {
-      document.getElementById('card-alumno').classList.toggle('hidden', tipo === 'docente');
-      document.getElementById('card-docente').classList.toggle('hidden', tipo === 'alumno');
+    function alternarFormularios(destino) {
+      document.getElementById('vista-alumno').classList.toggle('hidden', destino === 'docente');
+      document.getElementById('vista-docente').classList.toggle('hidden', destino === 'alumno');
     }
 
-    // Cargar nombres sugeridos de manera automática para el buscador predictivo
-    async function cargarSugerencias() {
-      const res = await fetch('/api/alumnos/buscar');
-      const alumnos = await res.json();
-      const datalist = document.getElementById('lista-predictiva');
-      datalist.innerHTML = alumnos.map(a => `<option value="${a.nombre_completo}">(${a.curso_nombre})</option>`).join('');
+    async function cargarSugerenciasPredictivas() {
+      const res = await fetch('/api/auth/predictivo');
+      const datos = await res.json();
+      const datalist = document.getElementById('sugerencias-alumnos');
+      datalist.innerHTML = datos.map(a => `<option value="${a.nombre_completo}">(${a.curso_nombre})</option>`).join('');
     }
-
-    document.getElementById('form-docente').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const res = await fetch('/api/login/docente', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ password: document.getElementById('doc-pass').value })
-      });
-      if(res.ok) window.location.href = '/docente.html';
-      else alert('Contraseña docente incorrecta');
-    });
 
     document.getElementById('form-alumno').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const res = await fetch('/api/login/alumno', {
+      const res = await fetch('/api/auth/alumno', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
@@ -96,24 +87,38 @@
           password: document.getElementById('al-pass').value
         })
       });
-      if(!res.ok) return alert('Verificá los datos ingresados');
+      if(!res.ok) return alert('Credenciales incorrectas, por favor revisa el nombre o la clave.');
       const data = await res.json();
-      if(data.primerIngreso) document.getElementById('modal-primer-ingreso').classList.remove('hidden');
-      else window.location.href = '/alumno.html';
+      if(data.primerIngreso) {
+        document.getElementById('modal-primer-ingreso').classList.remove('hidden');
+      } else {
+        window.location.href = '/alumno.html';
+      }
     });
 
-    async function guardarNuevaClave() {
-      const clave = document.getElementById('nueva-clave').value;
-      const res = await fetch('/api/alumno/cambiar-clave', {
+    document.getElementById('form-docente').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const res = await fetch('/api/auth/docente', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ nuevaClave: clave })
+        body: JSON.stringify({ password: document.getElementById('doc-pass').value })
+      });
+      if(res.ok) window.location.href = '/docente.html';
+      else alert('Clave de administrador incorrecta.');
+    });
+
+    async function ejecutarCambioClave() {
+      const pass = document.getElementById('nueva-clave').value;
+      if(pass.length < 4) return alert('La clave debe tener al menos 4 dígitos.');
+      const res = await fetch('/api/auth/cambiar-clave-inicial', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ nuevaClave: pass })
       });
       if(res.ok) window.location.href = '/alumno.html';
-      else alert('La clave debe contener 4 o más caracteres');
     }
 
-    window.onload = cargarSugerencias;
+    window.onload = cargarSugerenciasPredictivas;
   </script>
 </body>
 </html>
