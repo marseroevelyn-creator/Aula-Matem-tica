@@ -1,4 +1,3 @@
-// BLOQUE: IMPORTACIÓN DE LIBRERÍAS Y CONFIGURACIÓN INICIAL
 const express = require('express');
 const session = require('express-session');
 const bcrypt = require('bcryptjs');
@@ -11,10 +10,10 @@ const { pool, initDatabase } = require('./database');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Inicializar la base de datos
+// Inicializamos la base de datos relacional
 initDatabase();
 
-// Configurar Cloudinary para el almacenamiento persistente de archivos
+// Configuración de Cloudinary para almacenar archivos de forma segura
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -24,223 +23,242 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
-    folder: 'aula_virtual_entregas',
+    folder: 'aula_virtual_matematica',
     resource_type: 'auto'
-  },
+  }
 });
 const upload = multer({ storage: storage });
 
-// Inicializar Inteligencia Artificial de Gemini
+// Configuración del motor de Inteligencia Artificial Gemini
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-// Middlewares estándar
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 app.use(session({
-  secret: 'secreto_aula_matematica_2026',
+  secret: 'clave_secreta_aula_2026',
   resave: false,
   saveUninitialized: false
 }));
 
-// BLOQUE: SISTEMA DE AUTENTICACIÓN Y AUTORIZACIÓN (LOGIN)
-// Login del Docente
+// ==========================================
+// BLOQUE: CONTROL DE ACCESO (LOGINS)
+// ==========================================
+
+// Login Docente
 app.post('/api/login/docente', (req, res) => {
   const { password } = req.body;
-  if (password === 'admin123') { // Clave por defecto solicitada
+  if (password === 'admin123') { // Clave por defecto estipulada
     req.session.isDocente = true;
-    return res.json({ success: true, redirect: '/docente.html' });
+    return res.json({ success: true });
   }
-  return res.status(401).json({ success: false, message: 'Contraseña incorrecta' });
+  return res.status(401).json({ success: false, message: 'Clave incorrecta' });
 });
 
-// Login del Alumno (con texto predictivo/búsqueda por nombre en el frontend)
+// Autocompletado / Búsqueda predictiva de alumnos
+app.get('/api/alumnos/buscar', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT a.id, a.nombre_completo, c.nombre as curso_nombre 
+      FROM alumnos a 
+      LEFT JOIN cursos c ON a.curso_id = c.id
+    `);
+    res.json(result.rows);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// Login Alumnos
 app.post('/api/login/alumno', async (req, res) => {
   const { nombre_completo, password } = req.body;
   try {
     const result = await pool.query('SELECT * FROM alumnos WHERE nombre_completo = $1', [nombre_completo]);
-    if (result.rows.length === 0) return res.status(404).json({ success: false, message: 'Alumno no encontrado' });
-    
-    const alumno = result.rows[0];
-    let passValido = false;
+    if (result.rows.length === 0) return res.status(404).json({ message: 'Estudiante no encontrado' });
 
-    if (alumno.primer_ingreso && password === 'usuario') {
-      passValido = true;
+    const alumno = result.rows[0];
+    let esValida = false;
+
+    if (alumno.primer_ingreso && password === 'usuario') { // Clave inicial por defecto
+      esValida = true;
     } else {
-      passValido = await bcrypt.compare(password, alumno.password_hash);
+      esValida = await bcrypt.compare(password, alumno.password_hash);
     }
 
-    if (!passValido) return res.status(401).json({ success: false, message: 'Contraseña incorrecta' });
+    if (!esValida) return res.status(401).json({ message: 'Contraseña incorrecta' });
 
     req.session.alumnoId = alumno.id;
-    return res.json({ success: true, primerIngreso: alumno.primer_ingreso });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+    req.session.cursoId = alumno.curso_id;
+    res.json({ success: true, primerIngreso: alumno.primer_ingreso });
+  } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// Cambio de contraseña obligatorio en el primer ingreso
-app.post('/api/alumno/cambiar-password', async (req, res) => {
+// Cambio obligatorio de contraseña (Mínimo 4 dígitos)
+app.post('/api/alumno/cambiar-clave', async (req, res) => {
   if (!req.session.alumnoId) return res.status(401).send('No autorizado');
-  const { nuevaPassword } = req.body;
-  if (nuevaPassword.length < 4) return res.status(400).send('La clave debe tener al menos 4 dígitos');
+  const { nuevaClave } = req.body;
+  if (nuevaClave.length < 4) return res.status(400).send('Demasiado corta');
 
   try {
-    const hash = await bcrypt.hash(nuevaPassword, 10);
+    const hash = await bcrypt.hash(nuevaClave, 10);
     await pool.query('UPDATE alumnos SET password_hash = $1, primer_ingreso = FALSE WHERE id = $2', [hash, req.session.alumnoId]);
     res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+  } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// BLOQUE: TUTORÍA INTEGRADA CON IA (GEMINI REAL)
+// ==========================================
+// BLOQUE: CONEXIÓN REAL CON GEMINI AI
+// ==========================================
 app.post('/api/consultar-gemini', async (req, res) => {
   const { duda } = req.body;
   try {
     const model = ai.getGenerativeModel({ model: "gemini-pro" });
-    const promptContexto = `Eres un tutor de matemáticas empático y divertido para un aula virtual escolar. Responde de forma clara, concisa y pedagógica a la siguiente duda: ${duda}`;
+    const promptPedagogico = `Actúa como un Tutor de Matemática escolar de secundaria. Explica de forma clara, amigable y paso a paso, usando un lenguaje comprensible, la siguiente consulta: ${duda}`;
     
-    const result = await model.generateContent(promptContexto);
+    const result = await model.generateContent(promptPedagogico);
     const response = await result.response;
     res.json({ respuesta: response.text() });
   } catch (err) {
-    res.status(500).json({ respuesta: "Lo siento, tuve un problema al conectarme con mi cerebro de IA. Intenta de nuevo." });
+    res.json({ respuesta: "Ocurrió un inconveniente al conectar con el servicio de IA. Volvé a intentar en unos instantes." });
   }
 });
 
-// BLOQUE: FUNCIONALIDADES DEL PANEL DOCENTE (GESTIÓN)
-// Crear Curso
-app.post('/api/cursos', async (req, res) => {
-  if (!req.session.isDocente) return res.status(403).send('Acceso denegado');
+// ==========================================
+// BLOQUE: FUNCIONES DEL PANEL DOCENTE
+// ==========================================
+
+// Obtener todos los cursos con sus alumnos y tareas
+app.get('/api/docente/dashboard', async (req, res) => {
+  if (!req.session.isDocente) return res.status(403).send('No autorizado');
+  try {
+    const cursos = await pool.query('SELECT * FROM cursos ORDER BY nombre ASC');
+    const tareas = await pool.query('SELECT * FROM tareas ORDER BY tema ASC, id ASC');
+    res.json({ cursos: cursos.rows, bancoTareas: tareas.rows });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// Crear un curso nuevo
+app.post('/api/docente/cursos', async (req, res) => {
   const { nombre, whatsapp_link } = req.body;
   try {
-    const result = await pool.query('INSERT INTO cursos (nombre, whatsapp_link) VALUES ($1, $2) RETURNING *', [nombre, whatsapp_link]);
-    res.json(result.rows[0]);
+    const r = await pool.query('INSERT INTO cursos (nombre, whatsapp_link) VALUES ($1, $2) RETURNING *', [nombre, whatsapp_link || '']);
+    res.json(r.rows[0]);
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// Agregar Alumno
-app.post('/api/alumnos', async (req, res) => {
-  if (!req.session.isDocente) return res.status(403).send('Acceso denegado');
+// Registrar un alumno nuevo
+app.post('/api/docente/alumnos', async (req, res) => {
   const { nombre_completo, curso_id } = req.body;
   try {
-    // Registra al alumno con el hash de la palabra base "usuario" por seguridad inicial
-    const defaultHash = await bcrypt.hash('usuario', 10);
-    const result = await pool.query(
+    const claveDefectoHash = await bcrypt.hash('usuario', 10); // "usuario" por defecto
+    const r = await pool.query(
       'INSERT INTO alumnos (nombre_completo, password_hash, curso_id) VALUES ($1, $2, $3) RETURNING *',
-      [nombre_completo, defaultHash, curso_id]
+      [nombre_completo, claveDefectoHash, curso_id]
     );
-    res.json(result.rows[0]);
+    res.json(r.rows[0]);
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// Crear Tarea en el Banco Global
-app.post('/api/tareas', async (req, res) => {
-  if (!req.session.isDocente) return res.status(403).send('Acceso denegado');
-  const { tema, actividad, tipo, archivos_urls, requiere_entrega, fecha_entrega, prerrequisito_id } = req.body;
+// Reiniciar contraseña de un alumno
+app.post('/api/docente/alumnos/reiniciar', async (req, res) => {
+  const { alumno_id } = req.body;
   try {
-    const result = await pool.query(
-      `INSERT INTO tareas (tema, actividad, tipo, archivos_urls, requiere_entrega, fecha_entrega, prerrequisito_id) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
-      [tema, actividad, tipo, archivos_urls, requiere_entrega, fecha_entrega, prerrequisito_id || null]
-    );
-    res.json(result.rows[0]);
-  } catch (err) { res.status(500).json({ error: err.message }); }
-});
-
-// Adecuación curricular (Excluir tareas de forma individual)
-app.post('/api/adecuacion', async (req, res) => {
-  if (!req.session.isDocente) return res.status(403).send('Acceso denegado');
-  const { alumno_id, tarea_id, excluido } = req.body;
-  try {
-    await pool.query(
-      `INSERT INTO adecuacion_curricular (alumno_id, tarea_id, excluido) 
-       VALUES ($1, $2, $3) ON CONFLICT (alumno_id, tarea_id) 
-       DO UPDATE SET excluido = EXCLUDED.excluido`,
-      [alumno_id, tarea_id, excluido]
-    );
+    const claveDefectoHash = await bcrypt.hash('usuario', 10);
+    await pool.query('UPDATE alumnos SET password_hash = $1, primer_ingreso = TRUE WHERE id = $2', [claveDefectoHash, alumno_id]);
     res.json({ success: true });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// Reiniciar clave de un alumno (Vuelve a colocar "usuario" como contraseña por defecto)
-app.post('/api/alumnos/reiniciar-clave', async (req, res) => {
-  if (!req.session.isDocente) return res.status(403).send('Acceso denegado');
-  const { alumno_id } = req.body;
+// Agregar Tarea al Banco Global
+app.post('/api/docente/tareas', async (req, res) => {
+  const { tema, actividad, tipo, recurso_url, requiere_entrega, fecha_entrega, prerrequisito_id } = req.body;
   try {
-    await pool.query('UPDATE alumnos SET password_hash = $1, primer_ingreso = TRUE WHERE id = $2', [await bcrypt.hash('usuario', 10), alumno_id]);
-    res.json({ success: true, message: 'Clave restablecida a "usuario"' });
+    const r = await pool.query(
+      `INSERT INTO tareas (tema, actividad, tipo, recurso_url, requiere_entrega, fecha_entrega, prerrequisito_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+      [tema, actividad, tipo, recurso_url || '', requiere_entrega || false, fecha_entrega || null, prerrequisito_id || null]
+    );
+    res.json(r.rows[0]);
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// Copia de seguridad completa: Descargar datos en JSON
-app.get('/api/respaldo/exportar', async (req, res) => {
-  if (!req.session.isDocente) return res.status(403).send('Acceso denegado');
+// Adecuación Curricular: Guardar configuraciones de omisión
+app.post('/api/docente/adecuacion', async (req, res) => {
+  const { alumno_id, t_id, excluido } = req.body;
+  try {
+    await pool.query(`
+      INSERT INTO adecuaciones (alumno_id, tarea_id, excluido) VALUES ($1, $2, $3)
+      ON CONFLICT (alumno_id, tarea_id) DO UPDATE SET excluido = EXCLUDED.excluido
+    `, [alumno_id, t_id, excluido]);
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// Copia de seguridad: Exportar toda la base de datos en JSON
+app.get('/api/docente/respaldo/exportar', async (req, res) => {
   try {
     const cursos = await pool.query('SELECT * FROM cursos');
     const alumnos = await pool.query('SELECT * FROM alumnos');
     const tareas = await pool.query('SELECT * FROM tareas');
-    res.json({ cursos: cursos.rows, alumnos: alumnos.rows, tareas: tareas.rows });
+    const entregas = await pool.query('SELECT * FROM entregas');
+    res.json({ cursos: cursos.rows, alumnos: alumnos.rows, tareas: tareas.rows, entregas: entregas.rows });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// BLOQUE: RUTAS PARA EL PANEL DEL ALUMNO (ENTREGAS Y AUTOMATIZACIÓN)
-// Obtener las tareas del alumno ordenadas cronológicamente y filtrando exclusiones y prerrequisitos
-app.get('/api/alumno/mis-tareas', async (req, res) => {
+// ==========================================
+// BLOQUE: RUTAS PARA EL PANEL DEL ALUMNO
+// ==========================================
+
+// Obtener datos del alumno logueado, curso y tareas ordenadas inteligentemente
+app.get('/api/alumno/dashboard', async (req, res) => {
   if (!req.session.alumnoId) return res.status(401).send('No autorizado');
+  const alId = req.session.alumnoId;
+
   try {
-    const alumnoId = req.session.alumnoId;
-    
-    // Traer información del alumno y su curso
-    const alInfo = await pool.query('SELECT curso_id FROM alumnos WHERE id = $1', [alumnoId]);
-    const cursoId = alInfo.rows[0].curso_id;
+    const infoAl = await pool.query(`
+      SELECT a.nombre_completo, c.nombre as curso_nombre, c.whatsapp_link, c.fechas_importantes 
+      FROM alumnos a 
+      LEFT JOIN cursos c ON a.curso_id = c.id WHERE a.id = $1
+    `, [alId]);
 
-    // Buscar tareas no excluidas para este alumno
-    const tareasQuery = await pool.query(`
-      SELECT t.*, COALESCE(e.completada, FALSE) as completada, e.devolucion, e.necesita_reiniciar
+    // Consultamos las tareas cruzando los filtros de exclusión (adecuación)
+    const tareasAl = await pool.query(`
+      SELECT t.*, COALESCE(e.completada, false) as completada, e.archivo_url, e.devolucion, e.necesita_reiniciar, e.respuestas_test
       FROM tareas t
-      LEFT JOIN adecuacion_curricular ac ON ac.tarea_id = t.id AND ac.alumno_id = $1
+      LEFT JOIN adecuaciones ad ON ad.tarea_id = t.id AND ad.alumno_id = $1
       LEFT JOIN entregas e ON e.tarea_id = t.id AND e.alumno_id = $1
-      WHERE (ac.excluido IS NULL OR ac.excluido = FALSE)
-      ORDER BY t.fecha_entrega ASC, t.id ASC
-    `, [alumnoId]);
+      WHERE (ad.excluido IS NULL OR ad.excluido = false)
+    `, [alId]);
 
-    // Comprobación de estado automatizado por prerrequisito
-    const listadoFinal = tareasQuery.rows.map(tarea => {
+    // Aplicar lógica de automatización por Prerrequisitos
+    const listadoProcesado = tareasAl.rows.map(tarea => {
       if (tarea.prerrequisito_id) {
-        const preReq = tareasQuery.rows.find(t => t.id === tarea.prerrequisito_id);
-        tarea.bloqueada = preReq ? !preReq.completada : false;
+        const pre = tareasAl.rows.find(t => t.id === tarea.prerrequisito_id);
+        tarea.bloqueada = pre ? !pre.completada : false;
       } else {
         tarea.bloqueada = false;
       }
       return tarea;
     });
 
-    res.json(listadoFinal);
+    res.json({ info: infoAl.rows[0], tareas: listadoProcesado });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// Alumno marca como completada una actividad o sube su archivo a Cloudinary
-app.post('/api/alumno/entregar-tarea', upload.single('archivo_entrega'), async (req, res) => {
+// Marcar tarea completada o subir archivo a Cloudinary
+app.post('/api/alumno/entregar', upload.single('adjunto'), async (req, res) => {
   if (!req.session.alumnoId) return res.status(401).send('No autorizado');
-  const { tarea_id } = req.body;
-  const alumnoId = req.session.alumnoId;
-  const fileUrl = req.file ? req.file.path : null;
+  const { tarea_id, respuestas_test } = req.body;
+  const fileUrl = req.file ? req.file.path : ''; // Cloudinary nos da la URL directa aquí
 
   try {
     await pool.query(`
-      INSERT INTO entregas (alumno_id, tarea_id, completada, archivo_entrega_url)
-      VALUES ($1, $2, TRUE, $3)
-      ON CONFLICT (alumno_id, tarea_id)
-      DO UPDATE SET completada = TRUE, archivo_entrega_url = COALESCE(EXCLUDED.archivo_entrega_url, entregas.archivo_entrega_url), necesita_reiniciar = FALSE
-    `, [alumnoId, tarea_id, fileUrl]);
+      INSERT INTO entregas (alumno_id, tarea_id, completada, archivo_url, respuestas_test, necesita_reiniciar)
+      VALUES ($1, $2, true, $3, $4, false)
+      ON CONFLICT (alumno_id, tarea_id) 
+      DO UPDATE SET completada = true, archivo_url = COALESCE(EXCLUDED.archivo_url, entregas.archivo_url), respuestas_test = EXCLUDED.respuestas_test, necesita_reiniciar = false
+    `, [req.session.alumnoId, tarea_id, fileUrl, respuestas_test || '']);
 
     res.json({ success: true, url: fileUrl });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// Encender el servidor local / productivo
-app.listen(PORT, () => {
-  console.log(`Servidor ejecutándose con éxito en el puerto ${PORT}`);
-});
+app.listen(PORT, () => console.log(`Servidor activo en puerto ${PORT}`));
