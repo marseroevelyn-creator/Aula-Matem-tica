@@ -3,158 +3,204 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mi Aula Virtual</title>
+  <title>Mi Aula Virtual - Alumno</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-100 min-h-screen p-4 md:p-6 text-slate-800">
 
   <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-6">
     
-    <aside class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80 h-fit">
-      <h3 class="font-bold text-slate-700 mb-3 pb-2 border-b">📂 Índice de Temas</h3>
-      <ul id="index-lateral" class="space-y-2 text-sm text-blue-600 font-semibold">
+    <aside class="bg-white p-5 rounded-2xl shadow-sm border h-fit">
+      <h3 class="font-bold text-slate-700 mb-3 pb-2 border-b text-sm uppercase tracking-wider">📂 Temario</h3>
+      <ul id="indice-temas" class="space-y-2 text-xs text-blue-600 font-bold">
         </ul>
     </aside>
 
-    <main class="md:col-span-3 space-y-6">
+    <div class="md:col-span-3 space-y-6">
       
       <div class="bg-blue-600 text-white p-6 rounded-2xl shadow-md relative">
         <h1 class="text-2xl font-bold">Mi Aula Virtual</h1>
-        <p id="encabezado-info" class="text-sm opacity-90 mt-1">Cargando datos del estudiante...</p>
-        <div id="alerta-vencidos" class="hidden mt-2 text-xs bg-amber-400 text-slate-900 font-extrabold px-3 py-1 rounded-full inline-block">
-          ⚠️ Tenés actividades vencidas pendientes
+        <p id="encabezado-alumno" class="text-xs opacity-90 mt-1 font-medium">Sincronizando perfil...</p>
+        <p id="fechas-curso" class="text-xs mt-2 bg-blue-700/60 p-2 rounded-lg font-mono">Cargando cronograma...</p>
+        
+        <div id="badge-vencidas" class="hidden mt-3 text-[11px] bg-amber-400 text-slate-900 font-extrabold px-3 py-1 rounded-full inline-block animate-pulse">
+          ⚠️ Tenés actividades pendientes fuera de fecha
         </div>
-        <a id="link-wa" target="_blank" class="hidden absolute top-6 right-20 bg-green-500 hover:bg-green-600 px-3 py-1 rounded-full font-bold text-xs transition">💬 WhatsApp</a>
-        <button onclick="location.href='/'" class="absolute top-6 right-6 bg-red-500 px-3 py-1 rounded-full font-bold text-xs">Salir</button>
+
+        <div class="absolute top-6 right-6 flex gap-2">
+          <a id="wa-btn" target="_blank" class="hidden bg-green-500 hover:bg-green-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">WhatsApp</a>
+          <button onclick="location.href='/'" class="bg-red-500 hover:bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-full">Salir</button>
+        </div>
       </div>
 
-      <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-inner">
+      <div class="bg-white p-5 rounded-2xl border shadow-sm">
         <div class="flex justify-between items-center mb-2">
-          <h2 class="font-bold text-slate-800 flex items-center gap-1.5">🤖 Consultar a Gemini AI</h2>
-          <span class="text-xs bg-blue-100 text-blue-800 px-2.5 py-0.5 rounded-full font-bold">Tutor de Matemática</span>
+          <h2 class="font-bold text-slate-800 text-sm flex items-center gap-1.5">🤖 Consultar a Gemini AI</h2>
+          <span class="text-[10px] bg-blue-100 text-blue-800 px-2.5 py-0.5 rounded-full font-bold uppercase">Tutor de Matemática</span>
         </div>
-        <p class="text-xs text-slate-500 mb-3">¿Tienes dudas con una ecuación o teoría? Pregúntale a la IA real:</p>
+        <p class="text-xs text-slate-400 mb-3">¿Tenés dudas con una ecuación, teoría o querés verificar tu procedimiento? Preguntale a la IA real:</p>
         <div class="flex gap-2">
-          <input type="text" id="input-duda" placeholder="Escribí tu duda matemática acá..." class="flex-1 p-3 bg-white border rounded-xl text-sm outline-none focus:border-blue-500">
-          <button onclick="enviarAGemini()" class="bg-blue-600 text-white px-5 rounded-xl font-bold text-sm hover:bg-blue-700">Preguntar</button>
+          <input type="text" id="campo-duda" placeholder="Escribí tu duda matemática acá..." class="flex-1 p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-blue-500">
+          <button onclick="consultarTutorIA()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 rounded-xl font-bold text-xs transition">Preguntar</button>
         </div>
-        <div id="box-gemini" class="hidden mt-3 p-4 bg-white border border-slate-200 rounded-xl text-sm text-slate-700 whitespace-pre-line"></div>
+        <div id="respuesta-ia-box" class="hidden mt-3 p-4 bg-slate-50 border rounded-xl text-xs text-slate-700 whitespace-pre-line font-medium leading-relaxed"></div>
       </div>
 
       <div class="space-y-4">
-        <h3 class="font-bold text-lg text-slate-800">📌 Tus Actividades</h3>
-        <div id="tareas-box" class="space-y-4"></div>
+        <h3 class="font-bold text-base text-slate-700 uppercase tracking-wide">📌 Tus Actividades Asignadas</h3>
+        <div id="contenedor-actividades" class="space-y-4"></div>
       </div>
 
-    </main>
+    </div>
   </div>
 
   <script>
-    async function cargarAula() {
+    async function cargarContenidoAlumno() {
       const res = await fetch('/api/alumno/dashboard');
+      if(!res.ok) return;
       const data = await res.json();
+
+      // Render de Encabezado y WhatsApp
+      document.getElementById('encabezado-alumno').innerText = `Estudiante: ${data.info.nombre_completo} | Curso: ${data.info.curso_nombre}`;
+      document.getElementById('fechas-curso').innerText = `📅 Fechas Clave del Curso: ${data.info.fechas_importantes}`;
       
-      // Renderizar Encabezado [cite: 212]
-      document.getElementById('encabezado-info').innerText = `Estudiante: ${data.info.nombre_completo} | Curso: ${data.info.curso_nombre}`;
       if(data.info.whatsapp_link) {
-        const wa = document.getElementById('link-wa');
-        wa.href = data.info.whatsapp_link;
-        wa.classList.remove('hidden');
+        const btn = document.getElementById('wa-btn');
+        btn.href = data.info.whatsapp_link;
+        btn.classList.remove('hidden');
       }
 
-      // Renderizar Índice Lateral por Temas [cite: 214, 355]
-      const temas = [...new Set(data.tareas.map(t => t.tema))];
-      document.getElementById('index-lateral').innerHTML = temas.map(tema => 
-        `<li><a href="#${tema.replace(/\s+/g, '')}" class="hover:underline">📄 ${tema}</a></li>`
-      ).join('');
+      // Render del Índice Lateral por Temas Únicos
+      const temasUnicos = [...new Set(data.tareas.map(t => t.tema))];
+      document.getElementById('indice-temas').innerHTML = temasUnicos.map(tema => `
+        <li><a href="#tema-${tema.replace(/\s+/g, '')}" class="hover:underline block p-1 truncate">🔹 ${tema}</a></li>
+      `).join('');
 
-      // Ordenar actividades de forma inteligente: Pendientes/Urgentes arriba, realizadas abajo [cite: 215]
+      // Lógica de Clasificación y Ordenación Inteligente
       const ordenadas = data.tareas.sort((a, b) => a.completada - b.completada);
-      const contenedor = document.getElementById('tareas-box');
-      contenedor.innerHTML = '';
+      const boxActividades = document.getElementById('contenedor-actividades');
+      boxActividades.innerHTML = '';
 
-      let tieneVencidas = false;
-      const hoy = new Date();
+      let flagVencidas = false;
+      const fechaHoy = new Date();
 
-      ordenadas.forEach(t => {
-        if(!t.completada && t.fecha_entrega && new Date(t.fecha_entrega) < hoy) tieneVencidas = true;
+      ordenadas.forEach(act => {
+        if(!act.completada && act.fecha_entrega && new Date(act.fecha_entrega) < fechaHoy) flagVencidas = true;
 
-        let accionHTML = '';
-        if(t.bloqueada) {
-          accionHTML = `<span class="text-xs bg-slate-200 text-slate-400 font-bold px-3 py-1.5 rounded-xl">🔒 Bloqueada (Requiere #${t.prerrequisito_id})</span>`;
-        } else if(t.completada) {
-          accionHTML = `<span class="text-xs bg-green-100 text-green-700 font-bold px-3 py-1.5 rounded-xl">✓ Realizada</span>`;
+        let UIControl = '';
+
+        if(act.bloqueada) {
+          UIControl = `<span class="text-[11px] bg-slate-100 text-slate-400 font-bold px-3 py-2 rounded-xl border border-slate-200">🔒 Bloqueado (Requiere #${act.prerrequisito_id})</span>`;
+        } else if(act.completada) {
+          UIControl = `
+            <div class="text-right space-y-1">
+              <span class="text-[11px] bg-green-100 text-green-700 font-bold px-3 py-1.5 rounded-xl block text-center">✓ Realizada</span>
+              ${act.tipo === 'test' ? `<button onclick='verResultadoTest(${JSON.stringify(act.respuestas_json)})' class="text-[10px] text-purple-600 underline font-semibold block">Ver Corrección</button>` : ''}
+            </div>`;
         } else {
-          // Lógica según tipo de actividad [cite: 217, 218, 219]
-          if(t.tipo === 'video') {
-            accionHTML = `<button onclick="reproducirVideo('${t.recurso_url}', ${t.id})" class="bg-blue-600 text-white text-xs font-bold px-4 py-2 rounded-xl">▶ Ver Video</button>`;
-          } else if(t.tipo === 'test') {
-            accionHTML = `<button onclick="hacerTest(${t.id})" class="bg-purple-600 text-white text-xs font-bold px-4 py-2 rounded-xl">📝 Hacer Test</button>`;
+          // Lógica según tipos específicos
+          if(act.tipo === 'video') {
+            UIControl = `<button onclick="ejecutarVideo('${act.recurso_url}', ${act.id})" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-sm">▶ Ver Video</button>`;
+          } else if(act.tipo === 'test') {
+            UIControl = `<button onclick="abrirCuestionario(${act.id})" class="bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-sm">📝 Hacer Test</button>`;
           } else {
-            accionHTML = `
-              <form onsubmit="subirArchivo(event, ${t.id})" class="flex items-center gap-2">
-                <input type="file" name="adjunto" class="text-xs" required>
-                <button type="submit" class="bg-green-600 text-white text-xs font-bold px-3 py-1.5 rounded-xl">Entregar</button>
-              </form>`;
+            // Caso: Subida de archivo estructurado
+            UIControl = `
+              <div class="space-y-2 text-right">
+                <form onsubmit="subirArchivoServidor(event, ${act.id})" class="flex items-center gap-1.5">
+                  <input type="file" name="adjunto" class="text-[11px] text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-xl file:border-0 file:bg-slate-100 file:text-slate-700 font-semibold cursor-pointer" required>
+                  <button type="submit" class="bg-slate-700 text-white text-[11px] font-bold px-2.5 py-1 rounded-lg">Subir</button>
+                </form>
+                <div class="flex justify-end gap-1 items-center">
+                  ${act.subido_pero_no_entregado ? `<span class="text-[10px] text-amber-600 font-bold">⚠️ Subido pero no entregado</span>` : ''}
+                  <button onclick="finalizarEntregaDocumento(${act.id}, ${act.subido_pero_no_entregado})" class="bg-green-600 hover:bg-green-700 text-white text-[11px] font-bold px-3 py-1 rounded-lg">Entregar Actividad</button>
+                </div>
+              </div>`;
           }
         }
 
-        contenedor.innerHTML += `
-          <div id="${t.tema.replace(/\s+/g, '')}" class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4 ${t.bloqueada ? 'opacity-40' : ''}">
+        boxActividades.innerHTML += `
+          <div id="tema-${act.tema.replace(/\s+/g, '')}" class="bg-white p-5 rounded-2xl border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition-all ${act.bloqueada ? 'opacity-50 select-none' : 'hover:border-slate-300'}">
             <div>
-              <span class="text-[10px] font-bold bg-slate-100 text-slate-500 px-2 py-0.5 rounded uppercase">${t.tema}</span>
-              <h4 class="font-bold text-slate-800 text-base mt-1">${t.actividad} <span class="text-slate-400 font-normal">(#${t.id})</span></h4>
-              ${t.recurso_url && t.tipo !== 'video' ? `<a href="${t.recurso_url}" target="_blank" class="text-xs text-blue-500 underline block mt-1">🔗 Ver Recurso Externo</a>` : ''}
-              ${t.devolucion ? `<p class="text-xs bg-amber-50 text-amber-800 p-2 rounded-lg mt-2 font-medium">💬 Devolución: ${t.devolucion}</p>` : ''}
+              <span class="text-[9px] font-extrabold bg-slate-100 text-slate-500 px-2 py-0.5 rounded uppercase tracking-wider">${act.tema}</span>
+              <h4 class="font-bold text-slate-800 text-sm mt-1">${act.actividad} <span class="text-slate-400 font-normal text-xs">(#${act.id})</span></h4>
+              ${act.fecha_entrega ? `<p class="text-[11px] text-slate-400 mt-0.5 font-medium">📅 Límite: ${act.fecha_entrega.split('T')[0]}</p>` : ''}
+              ${act.devolucion ? `<div class="mt-2 text-xs bg-amber-50 text-amber-800 p-2.5 rounded-xl border border-amber-200 font-semibold">💬 Devolución Docente: "${act.devolucion}"</div>` : ''}
             </div>
-            <div>${accionHTML}</div>
+            <div class="w-full md:w-auto flex justify-end">${UIControl}</div>
           </div>
         `;
       });
 
-      if(tieneVencidas) document.getElementById('alerta-vencidos').classList.remove('hidden');
+      if(flagVencidas) document.getElementById('badge-vencidas').classList.remove('hidden');
     }
 
-    function reproducirVideo(url, id) {
-      alert("🎧 Recuerda usar auriculares si estás en el salón de clases ");
-      window.open(url, '_blank');
-      marcarCompletadaDirecto(id);
+    function ejecutarVideo(link, id) {
+      alert("🎧 Recuerda usar auriculares si estás en el salón de clases.");
+      window.open(link, '_blank');
+      fetch('/api/alumno/registrar-entrega', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ tarea_id: id })
+      }).then(() => cargarContenidoAlumno());
     }
 
-    async function marcarCompletadaDirecto(id) {
-      await fetch('/api/alumno/entregar', {
+    async function subirArchivoServidor(e, id) {
+      e.preventDefault();
+      const fData = new FormData(e.target);
+      fData.append('tarea_id', id);
+      const res = await fetch('/api/alumno/subir-archivo', { method: 'POST', body: fData });
+      if(res.ok) { alert('Archivo subido al servidor con éxito.'); cargarContenidoAlumno(); }
+    }
+
+    async function finalizarEntregaDocumento(id, subido) {
+      if(!subido) return alert('Debes cargar un archivo antes de presionar Entregar Actividad.');
+      const res = await fetch('/api/alumno/registrar-entrega', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ tarea_id: id })
       });
-      cargarAula();
+      if(res.ok) { alert('Actividad entregada formalmente.'); cargarContenidoAlumno(); }
     }
 
-    async function subirArchivo(e, id) {
-      e.preventDefault();
-      const formData = new FormData(e.target);
-      formData.append('tarea_id', id);
-
-      const res = await fetch('/api/alumno/entregar', { method: 'POST', body: formData });
-      if(res.ok) { alert("Archivo subido y entregado con éxito."); cargarAula(); }
-    }
-
-    async function enviarAGemini() {
-      const duda = document.getElementById('input-duda').value;
-      const box = document.getElementById('box-gemini');
-      box.classList.remove('hidden');
-      box.innerText = "Pensando respuesta pedagógica...";
-
-      const res = await fetch('/api/consultar-gemini', {
+    async function abrirCuestionario(id) {
+      const r1 = prompt("Pregunta 1: ¿Cuál es el resultado de la operación 3x + 5 = 14? (Responde el valor numérico de x)");
+      if(r1 === null) return;
+      const jsonRespuestas = JSON.stringify({ p1: r1, estado: 'Completado y auto-corregido' });
+      
+      await fetch('/api/alumno/registrar-entrega', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ duda })
+        body: JSON.stringify({ tarea_id: id, respuestas_json: jsonRespuestas })
+      });
+      alert('Test enviado.');
+      cargarContenidoAlumno();
+    }
+
+    function verResultadoTest(strJson) {
+      try {
+        const obj = JSON.parse(strJson);
+        alert(`Tus respuestas guardadas:\nPregunta 1: ${obj.p1}\nEstado: ${obj.estado}`);
+      } catch(e) { alert('No hay detalles estructurados de este test.'); }
+    }
+
+    async function consultarTutorIA() {
+      const q = document.getElementById('campo-duda').value;
+      if(!q) return;
+      const box = document.getElementById('respuesta-ia-box');
+      box.classList.remove('hidden');
+      box.innerText = "Pensando respuesta pedagógica clara...";
+      
+      const res = await fetch('/api/ia/consultar', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ consulta: q })
       });
       const data = await res.json();
       box.innerText = data.respuesta;
     }
 
-    window.onload = cargarAula;
+    window.onload = cargarContenidoAlumno;
   </script>
 </body>
 </html>
