@@ -1,1 +1,217 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi Aula Virtual - Estudiante</title>
+  <!-- Tailwind CSS para los estilos visuales idénticos a las capturas -->
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans min-h-screen">
 
+  <!-- ===================================================================== -->
+  <!-- BLOQUE 1: ENCABEZADO DE NAVEGACIÓN Y DATOS DEL CURSO                  -->
+  <!-- Explicación: Muestra el nombre del alumno, su curso, el enlace al     -->
+  <!-- grupo de WhatsApp y el aviso de fechas importantes o tareas pendientes.-->
+  <!-- ===================================================================== -->
+  <header class="bg-blue-600 text-white shadow-md p-4">
+    <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+      <div>
+        <h1 class="text-2xl font-black tracking-wide">Mi Aula Virtual</h1>
+        <p class="text-xs opacity-90 font-medium">
+          Estudiante: <span id="estudiante-nombre" class="font-bold">Juan Pérez</span> | 
+          Curso: <span id="estudiante-curso" class="font-bold">1° Año A</span>
+        </p>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <!-- Botón del grupo de WhatsApp enviado por la docente -->
+        <a id="btn-whatsapp" href="#" target="_blank" class="bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold px-3 py-2 rounded-lg flex items-center gap-1 shadow">
+          💬 Grupo WhatsApp
+        </a>
+        <button onclick="cerrarSesion()" class="bg-white text-blue-600 hover:bg-slate-100 text-xs font-bold px-4 py-2 rounded-lg shadow">
+          Salir
+        </button>
+      </div>
+    </div>
+  </header>
+
+
+  <!-- CONTENEDOR PRINCIPAL CON DISPOSICIÓN EN GRILLA -->
+  <main class="max-w-6xl mx-auto my-6 grid grid-cols-1 md:grid-cols-4 gap-6 px-4">
+    
+    <!-- =================================================================== -->
+    <!-- BLOQUE 2: ÍNDICE LATERAL DE TEMAS Y UNIDADES                        -->
+    <!-- Explicación: Menú lateral que ordena las actividades de la más      -->
+    <!-- vieja a la más nueva para facilitar el acceso rápido.         -->
+    <!-- =================================================================== -->
+    <aside class="md:col-span-1 bg-white p-4 rounded-xl shadow-sm border border-gray-200 h-fit">
+      <h3 class="font-bold text-gray-800 text-sm border-b pb-2 mb-3 flex items-center gap-1">
+        <span>📚</span> Índice de Temas
+      </h3>
+      <nav class="space-y-2 text-xs">
+        <a href="#unidad-1" class="block font-semibold text-blue-600 hover:underline">🔹 Unidad 1: Fracciones</a>
+        <a href="#unidad-2" class="block font-medium text-gray-500 hover:underline">🔹 Unidad 2: Inecuaciones</a>
+      </nav>
+    </aside>
+
+
+    <!-- SECCIÓN CENTRAL DE CONTENIDO -->
+    <section class="md:col-span-3 space-y-6">
+
+      <!-- ================================================================= -->
+      <!-- BLOQUE 3: SECCIÓN DE CONSULTAS A GEMINI AI                        -->
+      <!-- Explicación: Asistente virtual de matemática donde el alumno     -->
+      <!-- puede resolver dudas de teoría o verificar procedimientos. -->
+      <!-- ================================================================= -->
+      <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 shadow-sm">
+        <div class="flex justify-between items-center mb-2">
+          <div class="flex items-center gap-2">
+            <span class="text-blue-600 font-bold text-sm">✨ Consultar a Gemini AI</span>
+            <span class="bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Tutor de Matemática</span>
+          </div>
+        </div>
+
+        <p class="text-xs text-gray-600 mb-3">
+          ¿Tenés dudas con una ecuación, teoría o querés verificar tu procedimiento? Preguntale a la IA:
+        </p>
+
+        <div class="flex gap-2">
+          <input 
+            type="text" 
+            id="input-duda-gemini" 
+            placeholder="Escribí tu duda matemática acá..." 
+            class="flex-1 p-2.5 border border-gray-300 rounded-lg text-xs outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+          >
+          <button 
+            onclick="consultarGeminiAI()" 
+            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg text-xs font-bold transition shadow"
+          >
+            Enviar 🚀
+          </button>
+        </div>
+
+        <!-- Caja donde se dibuja la respuesta del modelo Gemini -->
+        <div id="box-respuesta-gemini" class="mt-3 text-xs text-gray-800 bg-white p-3 rounded-lg border border-blue-100 hidden leading-relaxed"></div>
+      </div>
+
+
+      <!-- ================================================================= -->
+      <!-- BLOQUE 4: LISTADO DE UNIDADES Y ACTIVIDADES                      -->
+      <!-- Explicación: Contiene las actividades agrupadas. Maneja avisos    -->
+      <!-- de auriculares para video y la lógica de prerequisitos.    -->
+      <!-- ================================================================= -->
+      <div id="unidad-1" class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 space-y-4">
+        
+        <h2 class="font-bold text-base text-gray-800 flex items-center gap-2 border-b pb-2">
+          <span>🔖</span> Unidad 1: Fracciones
+        </h2>
+
+        <!-- TAREA 1: Video + Apunte (Activa) -->
+        <div class="border border-blue-300 bg-blue-50/20 rounded-xl p-4 flex flex-col sm:flex-row justify-between sm:items-center gap-3">
+          <div class="space-y-2">
+            <h4 class="font-bold text-sm text-gray-800">📹 Conceptos básicos de Fracciones (#1)</h4>
+            <div class="flex flex-wrap gap-2">
+              <!-- Enlace a Video con Cartel de Auriculares -->
+              <button 
+                onclick="abrirVideo('https://youtube.com')" 
+                class="text-xs bg-white border border-blue-200 text-blue-600 font-semibold px-2.5 py-1 rounded-md shadow-sm hover:bg-blue-50"
+              >
+                🔗 Video Explicativo Troncho y Poncho
+              </button>
+              
+              <!-- PDF Adjunto -->
+              <a href="#" class="text-xs bg-white border border-blue-200 text-blue-600 font-semibold px-2.5 py-1 rounded-md shadow-sm hover:bg-blue-50">
+                📄 PDF de Apunte Teórico
+              </a>
+            </div>
+          </div>
+
+          <button onclick="marcarTerminada(this)" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-lg shadow whitespace-nowrap">
+            ✓ Terminar
+          </button>
+        </div>
+
+
+        <!-- TAREA 2: Test / Entrega de Archivo (Bloqueada por Pre-requisito) -->
+        <div class="border rounded-xl p-4 bg-gray-50 flex justify-between items-center opacity-60">
+          <div>
+            <h4 class="font-bold text-sm text-gray-700">📝 Test de Fracciones (#2)</h4>
+            <p class="text-[11px] text-gray-400 mt-0.5">Subí tu entrega antes de marcar la actividad como completada.</p>
+          </div>
+          <span class="bg-gray-200 text-gray-600 text-[10px] font-bold px-3 py-1.5 rounded-lg border">
+            🔒 Bloqueado (Requiere #1)
+          </span>
+        </div>
+
+      </div>
+
+    </section>
+  </main>
+
+
+  <!-- ===================================================================== -->
+  <!-- BLOQUE 5: LÓGICA DE JAVASCRIPT DEL ALUMNO                             -->
+  <!-- ===================================================================== -->
+  <script>
+    // ---------------------------------------------------------------------
+    // FUNCIÓN: Alerta de Auriculares para los Videos
+    // Explicación: Requisito del documento al hacer clic en un video[cite: 1].
+    // ---------------------------------------------------------------------
+    function abrirVideo(url) {
+      alert("🎧 Recuerda usar auriculares si estás en el salón de clases.");
+      window.open(url, '_blank');
+    }
+
+    // ---------------------------------------------------------------------
+    // FUNCIÓN: Consultar a Gemini AI
+    // Explicación: Envía la pregunta al endpoint /api/gemini-consulta de server.js[cite: 1].
+    // ---------------------------------------------------------------------
+    async function consultarGeminiAI() {
+      const input = document.getElementById('input-duda-gemini');
+      const boxRespuesta = document.getElementById('box-respuesta-gemini');
+      const duda = input.value.trim();
+
+      if (!duda) return;
+
+      boxRespuesta.classList.remove('hidden');
+      boxRespuesta.innerHTML = "<span class='text-blue-600 italic'>Pensando respuesta matemática...</span>";
+
+      try {
+        const res = await fetch('/api/gemini-consulta', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ duda })
+        });
+
+        const data = await res.json();
+        
+        if (data.exito) {
+          boxRespuesta.innerText = data.respuesta;
+        } else {
+          boxRespuesta.innerText = "Hubo un error al procesar tu duda. Intentá de nuevo.";
+        }
+      } catch (err) {
+        boxRespuesta.innerText = "Error de conexión con el servidor.";
+      }
+    }
+
+    // ---------------------------------------------------------------------
+    // FUNCIÓN: Marcar Tarea como Completada
+    // ---------------------------------------------------------------------
+    function marcarTerminada(btn) {
+      btn.innerText = "✔ Completado";
+      btn.className = "bg-gray-400 text-white text-xs font-bold px-4 py-2 rounded-lg cursor-not-allowed";
+      btn.disabled = true;
+      alert("¡Excelente! Has finalizado esta actividad.");
+    }
+
+    // ---------------------------------------------------------------------
+    // FUNCIÓN: Cerrar Sesión
+    // ---------------------------------------------------------------------
+    function cerrarSesion() {
+      window.location.href = '/';
+    }
+  </script>
+</body>
+</html>
