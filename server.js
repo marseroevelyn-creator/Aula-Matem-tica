@@ -7,7 +7,8 @@ require('dotenv').config(); // Carga las variables de entorno desde el archivo .
 const express = require('express');
 const { Pool } = require('pg'); // Cliente de PostgreSQL para conectar con Neon DB
 const cloudinary = require('cloudinary').v2;
-const { GoogleGenAI } = require('@google/genai');
+const { GoogleGenerativeAI } = require('@google/generative-ai'); // <-- LÍNEA IMPORTANTE (Reemplaza la importación vieja)
+require('dotenv').config();
 
 const app = express();
 
