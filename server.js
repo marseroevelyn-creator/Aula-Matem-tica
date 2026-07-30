@@ -112,7 +112,7 @@ app.post('/api/alumno/cambiar-clave', async (req, res) => {
   }
 });
 
-// ============================================================================
+/// ============================================================================
 // FUNCIÓN 3: Consulta al Asistente Didáctico Gemini AI
 // ============================================================================
 app.post('/api/gemini-consulta', async (req, res) => {
@@ -123,9 +123,8 @@ app.post('/api/gemini-consulta', async (req, res) => {
   }
 
   try {
-    const model = genAI.getGenerativeModel({ 
-      model: "gemini-2.5-flash"
-    });
+    // Usamos el nombre del modelo estable
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const promptConRol = `Sos un tutor asistente pedagógico de matemática para nivel secundario. Explicá de forma clara, directa, amable y didáctica. Responde a la siguiente duda: ${duda}`;
 
@@ -135,8 +134,12 @@ app.post('/api/gemini-consulta', async (req, res) => {
 
     res.json({ exito: true, respuesta: text });
   } catch (error) {
-    console.error("Error en Gemini:", error);
-    res.status(500).json({ exito: false, error: "Error al comunicarse con el tutor AI." });
+    console.error("Error detallado en consola del servidor:", error);
+    // Envia el mensaje exacto del error a la pantalla para diagnosticar
+    res.status(500).json({ 
+      exito: false, 
+      error: error.message || "Error al comunicarse con Gemini." 
+    });
   }
 });
 // ============================================================================
