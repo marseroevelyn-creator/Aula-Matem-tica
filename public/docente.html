@@ -1,1 +1,225 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Docente - Aula Virtual</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans p-6">
 
+  <!-- ===================================================================== -->
+  <!-- ENCABEZADO PRINCIPAL DEL PANEL                                       -->
+  <!-- Explicación: Título superior y botones de exportación/salida.        -->
+  <!-- ===================================================================== -->
+  <header class="max-w-7xl mx-auto flex justify-between items-center mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
+        <span>💻</span> Panel de Control Docente
+      </h1>
+      <p class="text-xs text-gray-500">Aula virtual de Matemática | Gestión de grupos y contenidos</p>
+    </div>
+    <div class="flex gap-2">
+      <button class="bg-gray-200 hover:bg-gray-300 text-gray-700 text-xs font-semibold px-3 py-2 rounded">📤 Exportar JSON</button>
+      <button onclick="window.location.href='/'" class="bg-red-500 hover:bg-red-600 text-white text-xs font-semibold px-4 py-2 rounded">Salir</button>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto space-y-6">
+
+    <!-- =================================================================== -->
+    <!-- BLOQUE 1: GESTIÓN DE CURSOS ACTIVOS                                 -->
+    <!-- Explicación: Botones de los cursos y desplegable de opciones.       -->
+    <!-- =================================================================== -->
+    <section class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
+      <h2 class="font-bold text-gray-700 mb-3 flex items-center gap-2">
+        <span>🏫</span> Mis Cursos Activos
+      </h2>
+
+      <div class="flex items-center gap-3">
+        <!-- Selector de Curso con Menú Desplegable (Segun Captura) -->
+        <div class="relative inline-block text-left">
+          <div class="flex">
+            <button class="bg-blue-600 text-white text-sm font-bold px-4 py-2 rounded-l-lg">1° Año A</button>
+            <button onclick="toggleMenuCurso()" class="bg-blue-700 text-white px-3 py-2 rounded-r-lg border-l border-blue-500">🔻</button>
+          </div>
+
+          <!-- Menú Flotante de Opciones del Curso -->
+          <div id="menu-curso-opciones" class="hidden absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-100 z-10 p-1 text-sm">
+            <button onclick="editarNombreCurso()" class="w-full text-left px-3 py-2 hover:bg-gray-50 flex items-center gap-2 text-gray-700">
+              ✏️ Editar Nombre
+            </button>
+            <button onclick="configurarWhatsapp()" class="w-full text-left px-3 py-2 hover:bg-gray-50 flex items-center gap-2 text-emerald-600">
+              💬 Link WhatsApp
+            </button>
+            <hr class="my-1">
+            <button onclick="eliminarCurso()" class="w-full text-left px-3 py-2 hover:bg-red-50 flex items-center gap-2 text-red-600">
+              🗑️ Eliminar Curso
+            </button>
+          </div>
+        </div>
+
+        <!-- Botón para Crear Nuevo Curso -->
+        <button class="bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-bold px-3 py-2 rounded-lg border">
+          + Nuevo Curso
+        </button>
+      </div>
+    </section>
+
+    <!-- GRID PRINCIPAL (Tablas y Banco de Tareas) -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+      <!-- COLUMNA IZQUIERDA: ALUMNOS (Ocupa 2 columnas) -->
+      <section class="lg:col-span-2 bg-white p-5 rounded-xl shadow-sm border border-gray-200 space-y-4">
+        
+        <!-- Encabezado y Formulario para Añadir Alumno -->
+        <div class="flex justify-between items-center border-b pb-3">
+          <h3 class="font-bold text-gray-800">Alumnos inscritos en <span class="text-blue-600">1° Año A</span></h3>
+          
+          <form onsubmit="agregarAlumno(event)" class="flex gap-2">
+            <input 
+              type="text" 
+              id="nuevo-alumno-nombre" 
+              placeholder="Nombre completo alumno" 
+              required 
+              class="border px-3 py-1.5 rounded-lg text-xs outline-none focus:ring-2 focus:ring-blue-500"
+            >
+            <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg">
+              Añadir Alumno
+            </button>
+          </form>
+        </div>
+
+        <!-- Tabla de Alumnos -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-gray-700">
+            <thead class="bg-gray-800 text-white uppercase text-[10px]">
+              <tr>
+                <th class="p-3">Nombre Alumno</th>
+                <th class="p-3">Progreso</th>
+                <th class="p-3 text-center">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="lista-alumnos" class="divide-y divide-gray-100">
+              <!-- Ejemplo de Alumno 1 -->
+              <tr>
+                <td class="p-3 font-semibold flex items-center gap-2">
+                  <span>✏️</span> Juan Pérez
+                </td>
+                <td class="p-3">0%</td>
+                <td class="p-3 flex justify-center gap-2">
+                  <!-- Botón Gestionar (Adecuación Curricular) -->
+                  <button onclick="abrirAdecuacion('Juan Pérez')" class="bg-sky-500 hover:bg-sky-600 text-white px-2.5 py-1 rounded flex items-center gap-1">
+                    ⚙️ Gestionar
+                  </button>
+                  <!-- Botón Reiniciar Clave -->
+                  <button onclick="reiniciarClave('Juan Pérez')" title="Reiniciar Clave a 'usuario'" class="bg-amber-100 text-amber-700 px-2 py-1 rounded hover:bg-amber-200">
+                    🔑
+                  </button>
+                  <!-- Botón Borrar -->
+                  <button class="bg-red-100 text-red-600 px-2 py-1 rounded hover:bg-red-200">🗑️</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- COLUMNA DERECHA: FECHAS CLAVE -->
+      <section class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 space-y-3">
+        <h3 class="font-bold text-gray-800 flex items-center justify-between">
+          <span>📅 Fechas Clave (1° Año A)</span>
+          <button class="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded">+ Agregar</button>
+        </h3>
+        <p class="text-xs text-gray-400 italic">No hay fechas importantes agendadas.</p>
+      </section>
+
+    </div>
+  </main>
+
+
+  <!-- ===================================================================== -->
+  <!-- MODAL: ADECUACIÓN CURRICULAR INDIVIDUAL                               -->
+  <!-- Explicación: Modal para omitir tareas a alumnos específicos.          -->
+  <!-- ===================================================================== -->
+  <div id="modal-adecuacion" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center hidden p-4">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-xl overflow-hidden border">
+      <!-- Encabezado Oscuro según captura -->
+      <div class="bg-gray-900 text-white p-4">
+        <h3 class="font-bold text-lg flex items-center gap-2">
+          <span>🧑‍🏫</span> Adecuación Curricular Individual
+        </h3>
+        <p class="text-xs text-gray-400">Alumno: <span id="adecuacion-nombre" class="text-white font-semibold"></span> | Curso: 1° Año A</p>
+      </div>
+
+      <div class="p-5 space-y-4">
+        <p class="text-xs text-gray-600">Marcá los casilleros de las tareas que querés <strong>EXCLUIR / OMITIR</strong> para este alumno. El alumno dejará de verlas en su aula virtual inmediatamente.</p>
+
+        <!-- Lista de tareas con switch de Omitir -->
+        <div class="space-y-3">
+          <div class="flex justify-between items-center p-3 border rounded-lg bg-gray-50 text-xs">
+            <div>
+              <span class="bg-gray-200 text-gray-700 font-bold px-2 py-0.5 rounded text-[10px]">Unidad 1: Fracciones</span>
+              <p class="font-medium mt-1">#1 - Conceptos básicos de Fracciones</p>
+            </div>
+            <label class="flex items-center cursor-pointer">
+              <input type="checkbox" class="sr-only peer">
+              <div class="w-9 h-5 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600 relative"></div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Botones de Acción -->
+        <div class="flex justify-end gap-2 pt-3 border-t">
+          <button onclick="cerrarAdecuacion()" class="bg-gray-500 text-white text-xs px-4 py-2 rounded font-semibold">Volver Sin Cambios</button>
+          <button onclick="cerrarAdecuacion()" class="bg-blue-600 text-white text-xs px-4 py-2 rounded font-semibold">Guardar Configuración</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ===================================================================== -->
+  <!-- LÓGICA JAVASCRIPT DEL PANEL DOCENTE                                  -->
+  <!-- ===================================================================== -->
+  <script>
+    // ---------------------------------------------------------------------
+    // FUNCIÓN: Mostrar/Ocultar Menú Desplegable del Curso
+    // ---------------------------------------------------------------------
+    function toggleMenuCurso() {
+      const menu = document.getElementById('menu-curso-opciones');
+      menu.classList.toggle('hidden');
+    }
+
+    // ---------------------------------------------------------------------
+    // FUNCIÓN: Configurar enlace de WhatsApp para el curso
+    // ---------------------------------------------------------------------
+    function configurarWhatsapp() {
+      const url = prompt("Ingresá el enlace del grupo de WhatsApp para este curso:");
+      if(url) alert("Enlace de WhatsApp guardado con éxito.");
+      toggleMenuCurso();
+    }
+
+    // ---------------------------------------------------------------------
+    // FUNCIÓN: Abrir Modal de Adecuación Curricular
+    // ---------------------------------------------------------------------
+    function abrirAdecuacion(nombreAlumno) {
+      document.getElementById('adecuacion-nombre').innerText = nombreAlumno;
+      document.getElementById('modal-adecuacion').classList.remove('hidden');
+    }
+
+    function cerrarAdecuacion() {
+      document.getElementById('modal-adecuacion').classList.add('hidden');
+    }
+
+    // ---------------------------------------------------------------------
+    // FUNCIÓN: Reiniciar Clave de Alumno a "usuario"
+    // ---------------------------------------------------------------------
+    function reiniciarClave(nombreAlumno) {
+      if(confirm(`¿Querés reiniciar la clave de ${nombreAlumno} a la contraseña por defecto "usuario"?`)) {
+        alert(`La contraseña de ${nombreAlumno} ha sido restablecida.`);
+      }
+    }
+  </script>
+</body>
+</html>
