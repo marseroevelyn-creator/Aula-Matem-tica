@@ -1,19 +1,20 @@
 // ============================================================================
 // BLOQUE 1: IMPORTACIÓN DE LIBRERÍAS Y CONFIGURACIÓN INICIAL
 // ============================================================================
-require('dotenv').config(); // Carga las variables de entorno desde el archivo .env
+require('dotenv').config();
 const express = require('express');
-const { Pool } = require('pg'); // Cliente de PostgreSQL para conectar con Neon DB
+const { Pool } = require('pg');
 const cloudinary = require('cloudinary').v2;
+const { GoogleGenAI } = require('@google/genai'); // Importación de la nueva SDK
 
-const { GoogleGenAI } = require('@google/genai');
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 const app = express();
 
-// Middlewares para procesar JSON en las peticiones y servir archivos estáticos
+// Middlewares
 app.use(express.json({ limit: '50mb' }));
 app.use(express.static('public'));
 
+// Inicialización de la API de Gemini
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 // ============================================================================
 // BLOQUE 2: CONEXIÓN A BASE DE DATOS NEON (POSTGRESQL)
 // ============================================================================
