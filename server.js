@@ -174,3 +174,39 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Servidor ejecutándose en el puerto ${PORT}`);
 });
+
+// ============================================================================
+// FUNCIÓN 4: Cargar Archivo a Cloudinary y Guardar Tarea
+// Ruta: POST /api/docente/crear-tarea
+// Explicación: Recibe el título, tema, links o archivos adjuntos. Si hay un
+// archivo base64/buffer, lo envía a Cloudinary y guarda el enlace en Neon.
+// ============================================================================
+app.post('/api/docente/crear-tarea', async (req, res) => {
+  const { tema, titulo, tipoRecurso, urlEnlace, archivoBase64, requiereEntrega, preRequisitoId } = req.body;
+
+  try {
+    let urlFinal = urlEnlace;
+
+    // Si la profesora subió un archivo local (PDF, imagen, etc.), lo mandamos a Cloudinary
+    if (archivoBase64) {
+      const resultadoUpload = await cloudinary.uploader.upload(archivoBase64, {
+        folder: 'aula_virtual_matematica',
+        resource_type: 'auto' // Detecta automáticamente si es PDF, imagen, etc.
+      });
+      urlFinal = resultadoUpload.secure_url;
+    }
+
+    // Insertamos la nueva tarea en Neon DB
+    const nuevaTarea = await pool.query(
+      `INSERT INTO tareas (tema, titulo, archivo_url, requiere_entrega, prerequisito_id) 
+       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [tema, titulo, urlFinal, requiereEntrega || false, preRequisitoId || null]
+    );
+
+    res.json({ exito: true, tarea: nuevaTarea.rows[0] });
+
+  } catch (error) {
+    console.error('Error al crear tarea:', error);
+    res.status(500).json({ exito: false, error: 'No se pudo guardar la tarea' });
+  }
+});
