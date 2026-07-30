@@ -7,6 +7,7 @@ require('dotenv').config(); // Carga las variables de entorno desde el archivo .
 const express = require('express');
 const { Pool } = require('pg'); // Cliente de PostgreSQL para conectar con Neon DB
 const cloudinary = require('cloudinary').v2;
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const { GoogleGenerativeAI } = require('@google/generative-ai'); // <-- LÍNEA IMPORTANTE (Reemplaza la importación vieja)
 require('dotenv').config();
 
@@ -40,8 +41,7 @@ cloudinary.config({
 // BLOQUE 4: INICIALIZACIÓN DE GEMINI AI
 // Explicación: Instancia el cliente oficial de Google GenAI para el tutor de matemática.
 // ============================================================================
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 // ============================================================================
 // FUNCIÓN 1: Autenticación de Usuarios (Docente y Alumno)
@@ -148,15 +148,21 @@ app.post('/api/gemini-consulta', async (req, res) => {
     return res.status(400).json({ exito: false, error: 'Debés escribir una consulta' });
   }
 
-  try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: duda,
-      config: {
-        // Instrucción de sistema para orientar la IA al perfil pedagógico deseado
-        systemInstruction: "Sos un tutor asistente pedagógico de matemática para nivel secundario. Explicá de forma clara, directa, amable y didáctica. Guía al alumno con pistas sin dar el resultado final de entrada a menos que te lo pidan explícitamente."
-      }
+try {
+    const model = genAI.getGenerativeModel({ 
+      model: "gemini-1.5-flash",
+      systemInstruction: "Sos un tutor asistente pedagógico de matemática para nivel secundario. Explicá de forma clara, directa, amable y didáctica."
     });
+
+    const result = await model.generateContent(duda);
+    const response = await result.response;
+    const text = response.text();
+
+    res.json({ exito: true, respuesta: text });
+  } catch (error) {
+    console.error("Error en Gemini:", error);
+    res.status(500).json({ exito: false, error: "Error al comunicarse con el tutor AI." });
+  }
 
     res.json({ exito: true, respuesta: response.text });
 
