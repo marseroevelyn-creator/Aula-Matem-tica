@@ -5,8 +5,9 @@ require('dotenv').config(); // Carga las variables de entorno desde el archivo .
 const express = require('express');
 const { Pool } = require('pg'); // Cliente de PostgreSQL para conectar con Neon DB
 const cloudinary = require('cloudinary').v2;
-const { GoogleGenerativeAI } = require('@google/generative-ai');
 
+const { GoogleGenAI } = require('@google/genai');
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 const app = express();
 
 // Middlewares para procesar JSON en las peticiones y servir archivos estáticos
@@ -112,7 +113,7 @@ app.post('/api/alumno/cambiar-clave', async (req, res) => {
   }
 });
 
-/// ============================================================================
+// ============================================================================
 // FUNCIÓN 3: Consulta al Asistente Didáctico Gemini AI
 // ============================================================================
 app.post('/api/gemini-consulta', async (req, res) => {
@@ -123,23 +124,15 @@ app.post('/api/gemini-consulta', async (req, res) => {
   }
 
   try {
-    // Usamos el nombre del modelo estable
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
-    const promptConRol = `Sos un tutor asistente pedagógico de matemática para nivel secundario. Explicá de forma clara, directa, amable y didáctica. Responde a la siguiente duda: ${duda}`;
-
-    const result = await model.generateContent(promptConRol);
-    const response = await result.response;
-    const text = response.text();
-
-    res.json({ exito: true, respuesta: text });
-  } catch (error) {
-    console.error("Error detallado en consola del servidor:", error);
-    // Envia el mensaje exacto del error a la pantalla para diagnosticar
-    res.status(500).json({ 
-      exito: false, 
-      error: error.message || "Error al comunicarse con Gemini." 
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: `Sos un tutor asistente pedagógico de matemática para nivel secundario. Explicá de forma clara, directa, amable y didáctica. Responde a la siguiente duda: ${duda}`,
     });
+
+    res.json({ exito: true, respuesta: response.text });
+  } catch (error) {
+    console.error("Error en Gemini:", error);
+    res.status(500).json({ exito: false, error: error.message || "Error al comunicarse con el tutor AI." });
   }
 });
 // ============================================================================
