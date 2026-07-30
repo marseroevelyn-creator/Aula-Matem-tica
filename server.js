@@ -115,6 +115,9 @@ app.post('/api/alumno/cambiar-clave', async (req, res) => {
 // ============================================================================
 // FUNCIÓN 3: Consulta al Asistente Didáctico Gemini AI
 // ============================================================================
+// ============================================================================
+// FUNCIÓN 3: Consulta al Asistente Didáctico Gemini AI
+// ============================================================================
 app.post('/api/gemini-consulta', async (req, res) => {
   const { duda } = req.body;
 
@@ -123,19 +126,21 @@ app.post('/api/gemini-consulta', async (req, res) => {
   }
 
   try {
+    // Usamos gemini-2.5-flash que es la versión actual
     const model = genAI.getGenerativeModel({ 
-      model: "gemini-1.5-flash",
-      systemInstruction: "Sos un tutor asistente pedagógico de matemática para nivel secundario. Explicá de forma clara, directa, amable y didáctica."
+      model: "gemini-2.5-flash"
     });
 
-    const result = await model.generateContent(duda);
+    const promptConRol = `Sos un tutor asistente pedagógico de matemática para nivel secundario. Explicá de forma clara, directa, amable y didáctica. Responde a la siguiente duda: ${duda}`;
+
+    const result = await model.generateContent(promptConRol);
     const response = await result.response;
     const text = response.text();
 
     res.json({ exito: true, respuesta: text });
   } catch (error) {
-    console.error("Error en Gemini:", error);
-    res.status(500).json({ exito: false, error: "Error al comunicarse con el tutor AI." });
+    console.error("Error detallado en Gemini:", error);
+    res.status(500).json({ exito: false, error: error.message || "Error al comunicarse con el tutor AI." });
   }
 });
 
@@ -176,4 +181,16 @@ app.post('/api/docente/crear-tarea', async (req, res) => {
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Servidor ejecutándose en el puerto ${PORT}`);
+});
+// ============================================================================
+// NUEVA FUNCIÓN: Obtener nombres de alumnos para el selector
+// ============================================================================
+app.get('/api/alumnos-lista', async (req, res) => {
+  try {
+    const resultado = await pool.query('SELECT nombre FROM alumnos ORDER BY nombre ASC');
+    res.json({ exito: true, alumnos: resultado.rows.map(a => a.nombre) });
+  } catch (error) {
+    console.error('Error al obtener lista de alumnos:', error);
+    res.status(500).json({ exito: false, alumnos: [] });
+  }
 });
