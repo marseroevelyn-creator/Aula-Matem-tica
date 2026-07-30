@@ -1,1 +1,255 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aula Virtual - Matemática</title>
+  <!-- Tailwind CSS para el diseño -->
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
 
+  <!-- ===================================================================== -->
+  <!-- BLOQUE 1: PANTALLA PRINCIPAL DE INGRESO (ALUMNO)                     -->
+  <!-- ===================================================================== -->
+  <div id="card-login" class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-gray-100">
+    
+    <!-- Encabezado con Ícono -->
+    <div class="text-center mb-6">
+      <div class="bg-blue-100 w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3">
+        <span class="text-2xl">🧮</span>
+      </div>
+      <h1 class="text-2xl font-extrabold text-gray-800">Aula Virtual</h1>
+    </div>
+
+    <!-- Formulario de Alumno -->
+    <form id="form-alumno-login" onsubmit="iniciarSesionAlumno(event)" class="space-y-4">
+      
+      <!-- Campo: Nombre Completo -->
+      <div>
+        <label class="block text-sm font-bold text-gray-700 mb-1">Tu Nombre Completo:</label>
+        <input 
+          type="text" 
+          id="alumno-nombre" 
+          placeholder="Escribí tu nombre..." 
+          required
+          class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none text-sm transition"
+        >
+      </div>
+
+      <!-- Campo: Contraseña con OJO para revelar -->
+      <div>
+        <label class="block text-sm font-bold text-gray-700 mb-1">Tu Contraseña:</label>
+        <div class="relative">
+          <input 
+            type="password" 
+            id="alumno-password" 
+            placeholder="Contraseña" 
+            required
+            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none text-sm transition pr-10"
+          >
+          <!-- Botón de Ojo (Alterna visibilidad de la contraseña) -->
+          <button 
+            type="button" 
+            onclick="alternarVisibilidadPassword('alumno-password', 'icono-ojo-alumno')" 
+            class="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600 focus:outline-none"
+          >
+            <span id="icono-ojo-alumno">👁️</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Mensaje de Error (Se oculta o muestra dinámicamente) -->
+      <p id="error-alumno" class="text-red-500 text-xs text-center hidden font-semibold"></p>
+
+      <!-- Botón de Ingreso -->
+      <button 
+        type="submit" 
+        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow-md transition duration-200"
+      >
+        Ingresar al Aula
+      </button>
+    </form>
+
+    <!-- Enlace al Panel Docente -->
+    <div class="mt-6 text-center border-t pt-4">
+      <button 
+        onclick="abrirModalDocente()" 
+        class="text-xs text-gray-500 hover:text-gray-800 font-semibold flex items-center justify-center mx-auto gap-1"
+      >
+        <span>💻</span> Acceso Panel Docente
+      </button>
+    </div>
+  </div>
+
+
+  <!-- ===================================================================== -->
+  <!-- BLOQUE 2: MODAL INGRESO PANEL DOCENTE                               -->
+  <!-- ===================================================================== -->
+  <div id="modal-docente" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center hidden p-4">
+    <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-sm border relative">
+      <h2 class="text-xl font-bold text-center text-gray-800 mb-4">Panel Docente</h2>
+      
+      <form onsubmit="iniciarSesionDocente(event)" class="space-y-4">
+        <div>
+          <div class="relative">
+            <input 
+              type="password" 
+              id="docente-password" 
+              placeholder="Contraseña Docente" 
+              required
+              class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none text-sm pr-10"
+            >
+            <button 
+              type="button" 
+              onclick="alternarVisibilidadPassword('docente-password', 'icono-ojo-docente')" 
+              class="absolute right-3 top-3.5 text-gray-400 focus:outline-none"
+            >
+              <span id="icono-ojo-docente">👁️</span>
+            </button>
+          </div>
+        </div>
+
+        <p id="error-docente" class="text-red-500 text-xs text-center hidden font-semibold"></p>
+
+        <button 
+          type="submit" 
+          class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow transition"
+        >
+          Ingresar
+        </button>
+      </form>
+
+      <button 
+        onclick="cerrarModalDocente()" 
+        class="mt-3 w-full text-xs text-gray-400 hover:text-gray-600 text-center"
+      >
+        Cancelar
+      </button>
+    </div>
+  </div>
+
+
+  <!-- ===================================================================== -->
+  <!-- BLOQUE 3: MODAL CAMBIO DE CLAVE PRIMER INGRESO (ALUMNO)              -->
+  <!-- ===================================================================== -->
+  <div id="modal-primer-ingreso" class="fixed inset-0 bg-black/60 flex items-center justify-center hidden p-4">
+    <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-sm text-center">
+      <h3 class="text-lg font-bold text-gray-800 mb-1">Primer Ingreso</h3>
+      <p class="text-xs text-gray-500 mb-4">Por seguridad debés cambiar tu contraseña genérica.</p>
+
+      <form onsubmit="guardarNuevaClaveAlumno(event)" class="space-y-4">
+        <input 
+          type="password" 
+          id="nueva-password" 
+          placeholder="Nueva contraseña (mínimo 4 dígitos)" 
+          required
+          minlength="4"
+          class="w-full px-4 py-2 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500"
+        >
+        <p id="error-primer-ingreso" class="text-red-500 text-xs hidden"></p>
+
+        <button 
+          type="submit" 
+          class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-lg transition text-sm"
+        >
+          Guardar y Entrar
+        </button>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- ===================================================================== -->
+  <!-- BLOQUE 4: LÓGICA DE JAVASCRIPT                                        -->
+  <!-- ===================================================================== -->
+  <script>
+    let alumnoIdActual = null;
+
+    function alternarVisibilidadPassword(inputId, iconoId) {
+      const input = document.getElementById(inputId);
+      const icono = document.getElementById(iconoId);
+      if (input.type === "password") {
+        input.type = "text";
+        icono.innerText = "🙈";
+      } else {
+        input.type = "password";
+        icono.innerText = "👁️";
+      }
+    }
+
+    function abrirModalDocente() { document.getElementById('modal-docente').classList.remove('hidden'); }
+    function cerrarModalDocente() { document.getElementById('modal-docente').classList.add('hidden'); }
+
+    async function iniciarSesionAlumno(e) {
+      e.preventDefault();
+      const nombre = document.getElementById('alumno-nombre').value;
+      const password = document.getElementById('alumno-password').value;
+      const errorTxt = document.getElementById('error-alumno');
+
+      errorTxt.classList.add('hidden');
+
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nombre, password, esDocente: false })
+      });
+
+      const data = await res.json();
+
+      if (!data.exito) {
+        errorTxt.innerText = data.error;
+        errorTxt.classList.remove('hidden');
+        return;
+      }
+
+      if (data.primerIngreso) {
+        alumnoIdActual = data.alumnoId;
+        document.getElementById('modal-primer-ingreso').classList.remove('hidden');
+      } else {
+        window.location.href = `/alumno.html?id=${data.alumnoId}`;
+      }
+    }
+
+    async function guardarNuevaClaveAlumno(e) {
+      e.preventDefault();
+      const nuevaPassword = document.getElementById('nueva-password').value;
+      const errorTxt = document.getElementById('error-primer-ingreso');
+
+      const res = await fetch('/api/alumno/cambiar-clave', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ alumnoId: alumnoIdActual, nuevaPassword })
+      });
+
+      const data = await res.json();
+      if (!data.exito) {
+        errorTxt.innerText = data.error;
+        errorTxt.classList.remove('hidden');
+      } else {
+        window.location.href = `/alumno.html?id=${alumnoIdActual}`;
+      }
+    }
+
+    async function iniciarSesionDocente(e) {
+      e.preventDefault();
+      const password = document.getElementById('docente-password').value;
+      const errorTxt = document.getElementById('error-docente');
+
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password, esDocente: true })
+      });
+
+      const data = await res.json();
+      if (!data.exito) {
+        errorTxt.innerText = data.error;
+        errorTxt.classList.remove('hidden');
+      } else {
+        window.location.href = '/docente.html';
+      }
+    }
+  </script>
+</body>
+</html>
