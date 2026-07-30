@@ -25,17 +25,21 @@
     <!-- Formulario de Alumno -->
     <form id="form-alumno-login" onsubmit="iniciarSesionAlumno(event)" class="space-y-4">
       
-      <!-- Campo: Nombre Completo -->
-      <div>
-        <label class="block text-sm font-bold text-gray-700 mb-1">Tu Nombre Completo:</label>
-        <input 
-          type="text" 
-          id="alumno-nombre" 
-          placeholder="Escribí tu nombre..." 
-          required
-          class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none text-sm transition"
-        >
-      </div>
+  <!-- Campo con Datalist para filtrado automático al escribir -->
+<div>
+  <label class="block text-sm font-bold text-gray-700 mb-1">Tu Nombre Completo:</label>
+  <input 
+    type="text" 
+    id="alumno-nombre" 
+    list="lista-alumnos-autocompletar"
+    placeholder="Escribí tu nombre..." 
+    autocomplete="off"
+    required
+    class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none text-sm transition"
+  >
+  <!-- Este menú se desplegará y filtrará dinámicamente mientras tipea -->
+  <datalist id="lista-alumnos-autocompletar"></datalist>
+</div>
 
       <!-- Campo: Contraseña con OJO para revelar -->
       <div>
@@ -250,6 +254,28 @@
         window.location.href = '/docente.html';
       }
     }
+// Cargar la lista de alumnos al abrir la pantalla
+document.addEventListener('DOMContentLoaded', cargarAlumnosDatalist);
+
+async function cargarAlumnosDatalist() {
+  const datalist = document.getElementById('lista-alumnos-autocompletar');
+  try {
+    const res = await fetch('/api/alumnos-lista');
+    const data = await res.json();
+
+    if (data.exito && data.alumnos.length > 0) {
+      datalist.innerHTML = '';
+      data.alumnos.forEach(nombre => {
+        const option = document.createElement('option');
+        option.value = nombre;
+        datalist.appendChild(option);
+      });
+    }
+  } catch (error) {
+    console.error('Error al cargar la lista de alumnos:', error);
+  }
+}
   </script>
 </body>
 </html>
+
