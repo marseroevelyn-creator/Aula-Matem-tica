@@ -115,9 +115,6 @@ app.post('/api/alumno/cambiar-clave', async (req, res) => {
 // ============================================================================
 // FUNCIÓN 3: Consulta al Asistente Didáctico Gemini AI
 // ============================================================================
-// ============================================================================
-// FUNCIÓN 3: Consulta al Asistente Didáctico Gemini AI
-// ============================================================================
 app.post('/api/gemini-consulta', async (req, res) => {
   const { duda } = req.body;
 
@@ -126,7 +123,6 @@ app.post('/api/gemini-consulta', async (req, res) => {
   }
 
   try {
-    // Usamos gemini-2.5-flash que es la versión actual
     const model = genAI.getGenerativeModel({ 
       model: "gemini-2.5-flash"
     });
@@ -139,11 +135,10 @@ app.post('/api/gemini-consulta', async (req, res) => {
 
     res.json({ exito: true, respuesta: text });
   } catch (error) {
-    console.error("Error detallado en Gemini:", error);
-    res.status(500).json({ exito: false, error: error.message || "Error al comunicarse con el tutor AI." });
+    console.error("Error en Gemini:", error);
+    res.status(500).json({ exito: false, error: "Error al comunicarse con el tutor AI." });
   }
 });
-
 // ============================================================================
 // FUNCIÓN 4: Cargar Archivo a Cloudinary y Guardar Tarea
 // ============================================================================
